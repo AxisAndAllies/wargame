@@ -30,7 +30,7 @@ export const Defense = {
     INF: 1,
     INFH: 1,
     APC: 2,
-    ARTI: 2,
+    ARTI: 1,
     AA: 2,
     TANKL: 3,
     TANKH: 5,
@@ -85,7 +85,7 @@ export const CantHit = {
     INF: HIGH_AIR_UNITS,
     INFH: HIGH_AIR_UNITS,
     APC: HIGH_AIR_UNITS,
-    ARTI: HIGH_AIR_UNITS,
+    ARTI: [Unit.BOM, Unit.FIG, Unit.HELI],
     AA: [],
     TANKL: HIGH_AIR_UNITS,
     TANKH: HIGH_AIR_UNITS,
@@ -99,4 +99,8 @@ artillery can fire into adjacent regions without moving in, although would expos
 AA is .2 accuracy vs air, .8 vs ground
 all units can go through hostile territories, attacking + taking AA fire, and go back in friendly territory
 to be able to HIT something, you must have attack >= their defense, AND they can't be in the "CantHit" list
+
+
+TODO:
+factories
 */
