@@ -1,7 +1,6 @@
-//@ts-check
 import {Unit, Attack, Defense, Descript, Move, Accuracy, CantHit} from './data'
 
-const getUnit = (name) => ({
+const getUnit = (name: keyof Unit) => ({
     name: Unit[name],
     attack: Attack[name],
     defense: Defense[name],
