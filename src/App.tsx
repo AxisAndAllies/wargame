@@ -1,28 +1,56 @@
-import { create } from 'istanbul-reports'
-import React, { useState, useEffect, ReactChild, EventHandler } from 'react'
-import { Box, Flex, ThemeProvider } from 'theme-ui'
-//@ts-ignore
+import React, { useState, useEffect, ReactChild, useMemo } from 'react'
+import { Box, Flex, ThemeProvider, Text, Button } from 'theme-ui'
+import { Unit, Descript } from './game/data'
 import theme from './theme'
 
 interface AppProps {}
 
+type Coords = [number, number]
+
+const HEIGHT = 10
+const WIDTH = 18
+const emptyCellState = {
+    units: [] as string[],
+}
+const createMatrix = (x: number, y: number) =>
+    new Array(x).fill(0).map(() => {
+        let res = []
+        for (let i = 0; i < y; i++)
+            res.push({ units: [] as string[], a: Math.random() })
+        return res
+    })
+
+const gameState = createMatrix(HEIGHT, WIDTH)
+
+const addUnitToCell = (unit: string, cell: Coords) => {
+    gameState[cell[0]][cell[1]] = {
+        ...gameState[cell[0]][cell[1]],
+        units: [...gameState[cell[0]][cell[1]].units, unit],
+    }
+}
+
 const Cell = ({
     children,
+    isFocused,
     onClick: clickPropAction,
 }: {
     children: ReactChild
+    isFocused: boolean
     onClick: (e: MouseEvent) => void
 }) => {
     const clickHandler = (e: MouseEvent) => {
-        console.log(e)
-        e.preventDefault()
+        // console.log(e)
         clickPropAction(e)
     }
     const [hover, setHover] = useState(false)
     return (
         <Box
             sx={{
-                border: hover ? '1px solid black' : '1px dotted gray',
+                border: isFocused
+                    ? '2px solid black'
+                    : hover
+                    ? '2px dashed blue'
+                    : '1px dotted #ccc',
                 userSelect: 'none',
                 width: '100px',
                 height: '100px',
@@ -37,7 +65,8 @@ const Cell = ({
     )
 }
 
-const Menu: React.FC<{ info: string }> = ({ info }) => {
+const Menu: React.FC<{ coords: Coords }> = ({ coords }) => {
+    console.log(Object.keys(Unit))
     return (
         <Box
             backgroundColor="#f6f6f6"
@@ -50,53 +79,54 @@ const Menu: React.FC<{ info: string }> = ({ info }) => {
                 right: 0,
                 border: '1px solid black',
             }}
-            p={2}
+            p={4}
         >
-            {info}
+            <Text>{JSON.stringify(gameState[coords[0]][coords[1]])}</Text>
+            <Flex py={4} sx={{ flexDirection: 'column' }}>
+                {Object.keys(Unit).map((name) => (
+                    <Box>
+                        <Button
+                            onClick={(e) => addUnitToCell(name, coords)}
+                            my={2}
+                        >
+                            Add {Descript[name]}
+                        </Button>
+                    </Box>
+                ))}
+            </Flex>
         </Box>
     )
 }
 
-const HEIGHT = 10
-const WIDTH = 18
-const emptyCellState = () => ({
-    units: [],
-})
-const createMatrix = (x: number, y: number) =>
-    new Array(x)
-        .fill(emptyCellState())
-        .map(() => new Array(y).fill(emptyCellState()))
-const gameState = createMatrix(HEIGHT, WIDTH)
-console.log(gameState)
-
 function App({}: AppProps) {
     // Create the count state.
-    const [count, setCount] = useState(0)
-    // Create the counter (+1 every second).
-    useEffect(() => {
-        const timer = setTimeout(() => setCount(count + 1), 1000)
-        return () => clearTimeout(timer)
-    }, [count, setCount])
+    // const [count, setCount] = useState(0)
+    // // Create the counter (+1 every second).
+    // useEffect(() => {
+    //     const timer = setTimeout(() => setCount(count + 1), 1000)
+    //     return () => clearTimeout(timer)
+    // }, [count, setCount])
 
     const [focusedCell, setFocusedCell] = useState<[number, number]>([0, 0])
 
     return (
         <div className="App">
-            <Menu
-                info={JSON.stringify({
-                    state: gameState[focusedCell[0]][focusedCell[1]],
-                    loc: focusedCell,
-                })}
-            />
+            <Menu coords={focusedCell} />
             <Box>
                 {gameState.map((row, i) => (
                     <Flex key={`row${i}`}>
-                        {row.map((e, j) => (
+                        {row.map((cell, j) => (
                             <Cell
                                 key={`cell${j}`}
-                                onClick={(e) => setFocusedCell([i, j])}
+                                isFocused={
+                                    focusedCell[0] == i && focusedCell[1] == j
+                                }
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    setFocusedCell([i, j])
+                                }}
                             >
-                                {JSON.stringify([i, j])}
+                                {JSON.stringify(gameState[i][j].units)}
                             </Cell>
                         ))}
                     </Flex>

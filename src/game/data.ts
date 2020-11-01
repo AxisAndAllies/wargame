@@ -1,6 +1,5 @@
-//@ts-check
 
-export const Unit = {
+export const Unit: Record<string, string> = {
     INF: "INF",
     INFH: "INFH",
     APC: "APC",
@@ -13,7 +12,7 @@ export const Unit = {
     BOM: "BOM",
 }
 
-export const Descript = {
+export const Descript: Record<string, string> = {
     INF: "infantry",
     INFH: "heavy infantry (anti-tank, anti-aircraft)",
     APC: "armored personel carrier",
@@ -26,7 +25,7 @@ export const Descript = {
     BOM: "bomber",
 }
 
-export const Defense = {
+export const Defense: Record<string, number> = {
     INF: 1,
     INFH: 1,
     APC: 2,
@@ -39,7 +38,7 @@ export const Defense = {
     BOM: 2,
 }
 
-export const Attack = {
+export const Attack: Record<string, number> = {
     INF: 2,
     INFH: 2,
     APC: 3,
@@ -52,7 +51,7 @@ export const Attack = {
     BOM: 8,
 }
 
-export const Move = {
+export const Move: Record<string, number> = {
     INF: 2,
     INFH: 2,
     APC: 4,
@@ -65,23 +64,23 @@ export const Move = {
     BOM: 6,
 }
 
-export const Accuracy = {
-    INF: .8,
-    INFH: .8,
-    APC: .8,
-    ARTI: .33,
+export const Accuracy: Record<string, Record<string, number>> = {
+    INF: {default: .8},
+    INFH: {default: .8},
+    APC: {default: .8},
+    ARTI: {default: .33},
     AA: {default: .8, BOM: .25, FIG: .25, HELI: .5},
-    TANKL: .8,
-    TANKH: .8,
-    HELI: 1,
-    FIG: .5,
-    BOM: .5,
+    TANKL: {default: .8},
+    TANKH: {default: .8},
+    HELI: {default: 1},
+    FIG: {default: .5},
+    BOM: {default: .5},
 }
 
 
 const HIGH_AIR_UNITS = [Unit.FIG, Unit.BOM]
 
-export const CantHit = {
+export const CantHit: Record<string, string[]>= {
     INF: HIGH_AIR_UNITS,
     INFH: HIGH_AIR_UNITS,
     APC: HIGH_AIR_UNITS,
