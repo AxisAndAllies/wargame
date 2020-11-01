@@ -21,11 +21,11 @@ const Cell = ({
     const [hover, setHover] = useState(false)
     return (
         <Box
-            m={0}
-            p={4}
             sx={{
                 border: hover ? '1px solid black' : '1px dotted gray',
                 userSelect: 'none',
+                width: '100px',
+                height: '100px',
             }}
             //@ts-ignore
             onClick={clickHandler}
@@ -58,10 +58,16 @@ const Menu: React.FC<{ info: string }> = ({ info }) => {
 }
 
 const HEIGHT = 10
-const WIDTH = 20
+const WIDTH = 18
+const emptyCellState = () => ({
+    units: [],
+})
 const createMatrix = (x: number, y: number) =>
-    new Array(x).fill(0).map(() => new Array(y).fill(0))
-const gameState = createMatrix(10, 20)
+    new Array(x)
+        .fill(emptyCellState())
+        .map(() => new Array(y).fill(emptyCellState()))
+const gameState = createMatrix(HEIGHT, WIDTH)
+console.log(gameState)
 
 function App({}: AppProps) {
     // Create the count state.
@@ -72,11 +78,16 @@ function App({}: AppProps) {
         return () => clearTimeout(timer)
     }, [count, setCount])
 
-    const [focusedCell, setFocusedCell] = useState([0, 0])
+    const [focusedCell, setFocusedCell] = useState<[number, number]>([0, 0])
 
     return (
         <div className="App">
-            <Menu info={JSON.stringify(focusedCell)} />
+            <Menu
+                info={JSON.stringify({
+                    state: gameState[focusedCell[0]][focusedCell[1]],
+                    loc: focusedCell,
+                })}
+            />
             <Box>
                 {gameState.map((row, i) => (
                     <Flex key={`row${i}`}>
@@ -85,7 +96,7 @@ function App({}: AppProps) {
                                 key={`cell${j}`}
                                 onClick={(e) => setFocusedCell([i, j])}
                             >
-                                {JSON.stringify(e)}
+                                {JSON.stringify([i, j])}
                             </Cell>
                         ))}
                     </Flex>
