@@ -1,5 +1,5 @@
-import React, { useState, useEffect, ReactChild, useMemo } from 'react'
-import { Box, Flex, ThemeProvider, Text, Button } from 'theme-ui'
+import React, { useState, ReactChild } from 'react'
+import { Box, Flex, Button, Badge, ThemeProvider } from 'theme-ui'
 import { Unit, Descript } from './game/data'
 import theme from './theme'
 
@@ -7,8 +7,8 @@ interface AppProps {}
 
 type Coords = [number, number]
 
-const HEIGHT = 10
-const WIDTH = 18
+const HEIGHT = 8
+const WIDTH = 14
 const emptyCellState = {
     units: [] as string[],
 }
@@ -20,13 +20,11 @@ const createMatrix = (x: number, y: number) =>
         return res
     })
 
-const gameState = createMatrix(HEIGHT, WIDTH)
+let gameState = createMatrix(HEIGHT, WIDTH)
 
 const addUnitToCell = (unit: string, cell: Coords) => {
-    gameState[cell[0]][cell[1]] = {
-        ...gameState[cell[0]][cell[1]],
-        units: [...gameState[cell[0]][cell[1]].units, unit],
-    }
+    gameState[cell[0]][cell[1]].units.push(unit)
+    // gameState = [...gameState]
 }
 
 const Cell = ({
@@ -52,8 +50,8 @@ const Cell = ({
                     ? '2px dashed blue'
                     : '1px dotted #ccc',
                 userSelect: 'none',
-                width: '100px',
-                height: '100px',
+                width: '150px',
+                height: '150px',
             }}
             //@ts-ignore
             onClick={clickHandler}
@@ -73,7 +71,7 @@ const Menu: React.FC<{ coords: Coords }> = ({ coords }) => {
             my="5vh"
             mr={0}
             sx={{
-                width: '600px',
+                width: '400px',
                 height: '90vh',
                 position: 'absolute',
                 right: 0,
@@ -81,13 +79,23 @@ const Menu: React.FC<{ coords: Coords }> = ({ coords }) => {
             }}
             p={4}
         >
-            <Text>{JSON.stringify(gameState[coords[0]][coords[1]])}</Text>
+            {/* <Flex>
+                {gameState[coords[0]][coords[1]].units.map((u) => (
+                    <Box backgroundColor="tomato">{Descript[u]}</Box>
+                ))}
+            </Flex> */}
+
             <Flex py={4} sx={{ flexDirection: 'column' }}>
                 {Object.keys(Unit).map((name) => (
                     <Box>
                         <Button
                             onClick={(e) => addUnitToCell(name, coords)}
                             my={2}
+                            backgroundColor="white"
+                            color="black"
+                            sx={{
+                                border: '1px solid black',
+                            }}
                         >
                             Add {Descript[name]}
                         </Button>
@@ -95,6 +103,30 @@ const Menu: React.FC<{ coords: Coords }> = ({ coords }) => {
                 ))}
             </Flex>
         </Box>
+    )
+}
+
+const UnitGroup = ({ units }: { units: string[] }) => {
+    const groups: Record<string, number> = {}
+    Object.keys(Unit).forEach((k) => (groups[k] = 0))
+    units.forEach((u) => (groups[u] += 1))
+    return (
+        <>
+            {Object.entries(groups).map(
+                ([k, cnt]) =>
+                    cnt > 0 && (
+                        <Badge
+                            backgroundColor="#b5e1ff"
+                            color="black"
+                            sx={{ fontSize: '16px' }}
+                            m={1}
+                            p={1}
+                        >
+                            {`${cnt}x ${k}`}
+                        </Badge>
+                    )
+            )}
+        </>
     )
 }
 
@@ -126,7 +158,7 @@ function App({}: AppProps) {
                                     setFocusedCell([i, j])
                                 }}
                             >
-                                {JSON.stringify(gameState[i][j].units)}
+                                <UnitGroup units={gameState[i][j].units} />
                             </Cell>
                         ))}
                     </Flex>
@@ -135,7 +167,6 @@ function App({}: AppProps) {
         </div>
     )
 }
-
 export default () => (
     <ThemeProvider theme={theme}>
         <App />
