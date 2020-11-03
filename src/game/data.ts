@@ -1,5 +1,5 @@
 
-export const Unit: Record<string, string> = {
+export const UnitType: Record<string, string> = {
     INF: "INF",
     INFH: "INFH",
     APC: "APC",
@@ -65,32 +65,32 @@ export const Move: Record<string, number> = {
 }
 
 export const Accuracy: Record<string, Record<string, number>> = {
-    INF: {default: .8},
-    INFH: {default: .8},
-    APC: {default: .8},
-    ARTI: {default: .33},
-    AA: {default: .8, BOM: .25, FIG: .25, HELI: .5},
-    TANKL: {default: .8},
-    TANKH: {default: .8},
-    HELI: {default: 1},
-    FIG: {default: .5},
+    INF: {default: .6},
+    INFH: {default: .6},
+    APC: {default: .6},
+    ARTI: {default: .25},
+    AA: {default: .6, BOM: .25, FIG: .25, HELI: .4},
+    TANKL: {default: .6},
+    TANKH: {default: .6},
+    HELI: {default: .6},
+    FIG: {default: .4},
     BOM: {default: .5},
 }
 
 
-const HIGH_AIR_UNITS = [Unit.FIG, Unit.BOM]
+const HIGH_AIR_UNITS = [UnitType.FIG, UnitType.BOM]
 
 export const CantHit: Record<string, string[]>= {
     INF: HIGH_AIR_UNITS,
     INFH: HIGH_AIR_UNITS,
     APC: HIGH_AIR_UNITS,
-    ARTI: [Unit.BOM, Unit.FIG, Unit.HELI],
+    ARTI: [UnitType.BOM, UnitType.FIG, UnitType.HELI],
     AA: [],
     TANKL: HIGH_AIR_UNITS,
     TANKH: HIGH_AIR_UNITS,
     HELI: HIGH_AIR_UNITS,
     FIG: [],
-    BOM: [Unit.BOM, Unit.FIG, Unit.HELI],
+    BOM: [UnitType.BOM, UnitType.FIG, UnitType.HELI],
 }
 
 /*
@@ -102,12 +102,18 @@ air units can go through hostile territories, attacking + taking AA fire, and go
 
 to be able to HIT something, you must have attack >= their defense, AND they can't be in the "CantHit" list
 
-you can choose to "fortify" an area, which takes 3 turns + costs $$$, but on completion gives +1 defense to all ground units forever for your side
+you can choose to "fortify" an area, which takes 3 turns + costs $$$, but on completion gives -25% accuracy penalty to attackers
+    - (eg. 80% accuracy --> 60% accuracy, or 50% accuracy --> 37.5% accuracy)
+    - enemy can use fortifications if they capture
 
-cities gives +1 defense to all ground units occupying it
+cities gives -25% accuracy penalty to attackers to all attackers
 
-units are only resupplied when connected to resupply lines that enemies can destroy, after which they have 3 fights worth of ammo
+units are only resupplied when connected to resupply lines that enemies can destroy, after which they have 3 fights worth of ammo?
+
+IN combat:
+    - each "round" consists of attacker fire, followed by defender fire
+    - defender can retreat anytime, but can't fire for that round
 
 TODO:
-factories
+factories?? (or can just produce in cities?)
 */

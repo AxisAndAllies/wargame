@@ -1,6 +1,6 @@
 import React, { useState, ReactChild } from 'react'
 import { Box, Flex, Button, Badge, ThemeProvider } from 'theme-ui'
-import { Unit, Descript } from './game/data'
+import { UnitType, Descript } from './game/data'
 import theme from './theme'
 
 interface AppProps {}

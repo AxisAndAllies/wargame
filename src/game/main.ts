@@ -1,7 +1,7 @@
-import {Unit, Attack, Defense, Descript, Move, Accuracy, CantHit} from './data'
+import {UnitType, Attack, Defense, Descript, Move, Accuracy, CantHit} from './data'
 
 const getUnit = (name: string) => ({
-    name: Unit[name],
+    name: UnitType[name],
     attack: Attack[name],
     defense: Defense[name],
     descript: Descript[name],
