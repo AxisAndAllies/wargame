@@ -40,7 +40,7 @@ export const Defense: Record<string, number> = {
 
 export const Attack: Record<string, number> = {
     INF: 2,
-    INFH: 2,
+    INFH: 3,
     APC: 3,
     ARTI: 3,
     AA: 4,
@@ -95,10 +95,18 @@ export const CantHit: Record<string, string[]>= {
 
 /*
 artillery can fire into adjacent regions without moving in, although would expose themselves to counter-battery fire
-AA is .2 accuracy vs air, .8 vs ground
-all units can go through hostile territories, attacking + taking AA fire, and go back in friendly territory
+
+AA has accuracy depending on what it's hitting
+
+air units can go through hostile territories, attacking + taking AA fire, and go back in friendly territory
+
 to be able to HIT something, you must have attack >= their defense, AND they can't be in the "CantHit" list
 
+you can choose to "fortify" an area, which takes 3 turns + costs $$$, but on completion gives +1 defense to all ground units forever for your side
+
+cities gives +1 defense to all ground units occupying it
+
+units are only resupplied when connected to resupply lines that enemies can destroy, after which they have 3 fights worth of ammo
 
 TODO:
 factories
