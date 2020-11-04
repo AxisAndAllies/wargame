@@ -1,14 +1,34 @@
+import {UnitType, Attack, Defense, Descript, Move, Accuracy, CantHit} from './data'
 class Unit {
     pos: Tile
     owner: Player
+    name: string
 
-    constructor(initialPos: Tile, initialOwner: Player) {
+    constructor(initialPos: Tile, initialOwner: Player, unitType: string) {
         this.pos = initialPos
         this.owner = initialOwner
+        this.name = unitType
     }
 
     get isAttacker() {
         return this.pos.owner_player !== this.owner
+    }
+
+    get attack(){return Attack[name]}
+    get defense(){return Defense[name]}
+    get descript(){return Descript[name]}
+    get move(){return Move[name]}
+    accuracy(target: Unit){
+        let accLookup = Accuracy[name]
+        return accLookup[target.name] ?? accLookup['default']
+    }
+    
+    canAttack(target: Unit): [boolean, string] {
+        if (CantHit[name].includes(target.name))
+            return [false, 'Cannot attack target type']
+        if (Attack[name] < Defense[target.name])
+            return [false, 'Attack less than target defense']
+        return [true, '']
     }
 }
 
@@ -26,8 +46,12 @@ class City {
 
 class Fortification {
     pos: Tile
+    cost: number
+    turnsRemaining: number
     constructor(initialPos: Tile) {
         this.pos = initialPos
+        this.cost = 100
+        this.turnsRemaining = 3
     }
 
     get owner() {
@@ -61,6 +85,11 @@ class Player {
     }
 }
 
+const dist = (a: Tile, b: Tile) => {
+    // manhattan dist
+    return Math.abs(b.y - a.y) + Math.abs(b.x - a.x)
+}
+
 class Game {
     tiles: Tile[]
     units: Unit[]
@@ -80,15 +109,30 @@ class Game {
     }
 
     moveUnit(u: Unit, dest: Tile) {
+        // TODO: check able to move there
         u.pos = dest
+    }
+
+    spendMoney() {
+
+    }
+
+    possibleMoves(u: Unit, moveDist: number = u.move) {
+        // calculates possible destination tiles to move
+        return this.tiles.filter(t => dist(t, u.pos) <= moveDist)
     }
 
     tick() {
 
     }
 
+    startBuildingFortification(tile: Tile) {
+        // takes 3 turns
+    }
+
     resolveCombat(t: Tile) {
-        let unitsOnTile = this.units.filter(u => u.pos == t)
+        const unitsOnTile = this.units.filter(u => u.pos == t)
+        let attacking = this.curTurn
     }
 
     nextTurn() {

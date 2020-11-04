@@ -69,12 +69,25 @@ export const Accuracy: Record<string, Record<string, number>> = {
     INFH: {default: .6},
     APC: {default: .6},
     ARTI: {default: .25},
-    AA: {default: .6, BOM: .25, FIG: .25, HELI: .4},
+    AA: {default: .6, BOM: .2, FIG: .2, HELI: .4},
     TANKL: {default: .6},
     TANKH: {default: .6},
     HELI: {default: .6},
     FIG: {default: .4},
     BOM: {default: .5},
+}
+
+export const Cost: Record<string, number> = {
+    INF: 1,
+    INFH: 2,
+    APC: 4,
+    ARTI: 3,
+    AA: 3,
+    TANKL: 5,
+    TANKH: 8,
+    HELI: 5,
+    FIG: 10,
+    BOM: 15,
 }
 
 
@@ -98,6 +111,8 @@ artillery can fire into adjacent regions without moving in, although would expos
 
 AA has accuracy depending on what it's hitting
 
+bomber can hit 2 targets?
+
 air units can go through hostile territories, attacking + taking AA fire, and go back in friendly territory
 
 to be able to HIT something, you must have attack >= their defense, AND they can't be in the "CantHit" list
@@ -116,4 +131,5 @@ IN combat:
 
 TODO:
 factories?? (or can just produce in cities?)
+APC can carry 2 INF or INFH
 */
