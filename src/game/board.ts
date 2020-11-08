@@ -1,18 +1,20 @@
 import {UnitType, Attack, Defense, Descript, Move, Accuracy, CantHit} from './data'
+import {animalId, numericId, alphaNumericId} from 'short-animal-id'
 export class Unit {
     pos: Tile
-    owner: Player
-    name: string
-    id: ''
+    readonly owner: Player
+    readonly name: string
+    readonly id: string
 
     constructor(initialPos: Tile, initialOwner: Player, unitType: string) {
         this.pos = initialPos
         this.owner = initialOwner
         this.name = unitType
+        this.id = this.owner.id + '_' + this.name + '_' + alphaNumericId()
     }
 
     get isAttacker() {
-        return this.pos.owner_player !== this.owner
+        return this.pos.owner !== this.owner
     }
 
     get attack(){return Attack[name]}
@@ -44,7 +46,7 @@ export class City {
     }
 
     get owner() {
-        return this.pos.owner_player
+        return this.pos.owner
     }
 
 }
@@ -60,7 +62,7 @@ export class Fortification {
     }
 
     get owner() {
-        return this.pos.owner_player
+        return this.pos.owner
     }
 }
 
@@ -69,24 +71,26 @@ export class Tile {
     y: number;
     name: string;
     value: number;
-    owner_player: Player | null
-    owned_turns: number = 0
+    owner: Player | null
+    num_turns_owned: number = 0
    
     constructor(initialX: number, initialY: number, name: string, value: number) {
         this.x = initialX;
         this.y = initialY
         this.name = name
         this.value = value
-        this.owner_player = null
+        this.owner = null
     }
 }
 
 export class Player {
     readonly name: string;
     money: number
+    readonly id: string
     constructor(name: string, money: number) {
         this.name = name
         this.money = money
+        this.id = animalId() + numericId()
     }
 }
 

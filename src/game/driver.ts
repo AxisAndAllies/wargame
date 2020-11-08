@@ -15,6 +15,8 @@ let tile1 = new Tile(1,1,'tile1', 5);
 let units: Unit[] = []
 units = [...units, ...Object.keys(UnitType).map(t => new Unit(tile1, p1, t))]
 units = [...units, ...Object.keys(UnitType).map(t => new Unit(tile1, p2, t))]
+console.log(units)
 
 let game = new Game([tile1], units, [p1,p2])
-game.units.forEach(u => console.log(JSON.stringify(u)))
+console.log(game.units)
+game.units.forEach(u => console.log(u.id))

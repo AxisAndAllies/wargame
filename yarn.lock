@@ -6241,6 +6241,11 @@ shebang-regex@^3.0.0:
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-3.0.0.tgz#ae16f1644d873ecad843b0307b143362d4c42172"
   integrity sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==
 
+short-animal-id@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/short-animal-id/-/short-animal-id-2.1.1.tgz#5d1e603df6320619c8f25b57c906170684c0b854"
+  integrity sha512-wJI8T6IP2PrxGcbF/vi8LjTGadWZn6Po1rEKg/8/Kdb1R9tblPKn0lBSisPtDzRol3LO9AoFTxvoHJeRcyrpnw==
+
 signal-exit@^3.0.0, signal-exit@^3.0.2, signal-exit@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.3.tgz#a1410c2edd8f077b08b4e253c8eacfcaf057461c"
