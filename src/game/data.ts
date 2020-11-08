@@ -107,7 +107,6 @@ export const CantHit: Record<string, string[]>= {
 }
 
 /*
-artillery can fire into adjacent regions without moving in, although would expose themselves to counter-battery fire
 
 AA has accuracy depending on what it's hitting
 
@@ -132,4 +131,6 @@ IN combat:
 TODO:
 factories?? (or can just produce in cities?)
 APC can carry 2 INF or INFH
+artillery can fire into adjacent regions without moving in, although would expose themselves to counter-battery fire
+
 */

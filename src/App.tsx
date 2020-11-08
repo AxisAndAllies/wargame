@@ -64,7 +64,6 @@ const Cell = ({
 }
 
 const Menu: React.FC<{ coords: Coords }> = ({ coords }) => {
-    console.log(Object.keys(Unit))
     return (
         <Box
             backgroundColor="#f6f6f6"
@@ -86,7 +85,7 @@ const Menu: React.FC<{ coords: Coords }> = ({ coords }) => {
             </Flex> */}
 
             <Flex py={4} sx={{ flexDirection: 'column' }}>
-                {Object.keys(Unit).map((name) => (
+                {Object.keys(UnitType).map((name) => (
                     <Box>
                         <Button
                             onClick={(e) => addUnitToCell(name, coords)}
@@ -108,7 +107,7 @@ const Menu: React.FC<{ coords: Coords }> = ({ coords }) => {
 
 const UnitGroup = ({ units }: { units: string[] }) => {
     const groups: Record<string, number> = {}
-    Object.keys(Unit).forEach((k) => (groups[k] = 0))
+    Object.keys(UnitType).forEach((k) => (groups[k] = 0))
     units.forEach((u) => (groups[u] += 1))
     return (
         <>

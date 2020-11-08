@@ -1,8 +1,9 @@
 import {UnitType, Attack, Defense, Descript, Move, Accuracy, CantHit} from './data'
-class Unit {
+export class Unit {
     pos: Tile
     owner: Player
     name: string
+    id: ''
 
     constructor(initialPos: Tile, initialOwner: Player, unitType: string) {
         this.pos = initialPos
@@ -30,9 +31,13 @@ class Unit {
             return [false, 'Attack less than target defense']
         return [true, '']
     }
+
+    possibleTargets(targets: Unit[]): Unit[] {
+        return targets.filter(t => this.canAttack(t)[0] && t.owner !== this.owner)
+    }
 }
 
-class City {
+export class City {
     pos: Tile
     constructor(initialPos: Tile) {
         this.pos = initialPos
@@ -44,7 +49,7 @@ class City {
 
 }
 
-class Fortification {
+export class Fortification {
     pos: Tile
     cost: number
     turnsRemaining: number
@@ -59,7 +64,7 @@ class Fortification {
     }
 }
 
-class Tile {
+export class Tile {
     x: number;
     y: number;
     name: string;
@@ -76,7 +81,7 @@ class Tile {
     }
 }
 
-class Player {
+export class Player {
     readonly name: string;
     money: number
     constructor(name: string, money: number) {
@@ -90,21 +95,21 @@ const dist = (a: Tile, b: Tile) => {
     return Math.abs(b.y - a.y) + Math.abs(b.x - a.x)
 }
 
-class Game {
+export class Game {
     tiles: Tile[]
     units: Unit[]
     players: Player[]
     curTurn: number
 
-    constructor() {
+    constructor(tiles:Tile[], units: Unit[], players: Player[]) {
         // need to generate all this...
-        this.tiles = []
+        this.tiles = tiles
         this.units = []
-        this.players = []
+        this.players = players
         this.curTurn = 0
     }
 
-    curPlayer() {
+    get curPlayer() {
         return this.players[this.curTurn]
     }
 
