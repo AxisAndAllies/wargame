@@ -9,7 +9,7 @@
   "dependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "short-animal-id": "^2.1.1",
+    "short-animal-id": "^3.0.1",
     "theme-ui": "^0.3.1"
   },
   "devDependencies": {

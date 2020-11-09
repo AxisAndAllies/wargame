@@ -1,4 +1,4 @@
-import {UnitType, Attack, Defense, Descript, Move, Accuracy, CantHit} from './data'
+import {UnitType, Attack, Defense, Descript, Move, Accuracy, CantHit, Cost} from './data'
 import {animalId, numericId, alphaNumericId} from 'short-animal-id'
 export class Unit {
     pos: Tile
@@ -21,6 +21,7 @@ export class Unit {
     get defense(){return Defense[name]}
     get descript(){return Descript[name]}
     get move(){return Move[name]}
+    get cost(){return Cost[name]}
     accuracy(target: Unit){
         let accLookup = Accuracy[name]
         return accLookup[target.name] ?? accLookup['default']
@@ -40,7 +41,7 @@ export class Unit {
 }
 
 export class City {
-    pos: Tile
+    readonly pos: Tile
     constructor(initialPos: Tile) {
         this.pos = initialPos
     }
@@ -52,12 +53,11 @@ export class City {
 }
 
 export class Fortification {
-    pos: Tile
-    cost: number
+    readonly pos: Tile
+    static readonly cost: number  = 100
     turnsRemaining: number
     constructor(initialPos: Tile) {
         this.pos = initialPos
-        this.cost = 100
         this.turnsRemaining = 3
     }
 
@@ -92,6 +92,13 @@ export class Player {
         this.money = money
         this.id = animalId() + numericId()
     }
+    trySpendMoney(amount: number): boolean {
+        if (this.money > amount) {
+            this.money -= amount
+            return true
+        }
+        return false
+    }
 }
 
 const dist = (a: Tile, b: Tile) => {
@@ -100,15 +107,15 @@ const dist = (a: Tile, b: Tile) => {
 }
 
 export class Game {
-    tiles: Tile[]
-    units: Unit[]
-    players: Player[]
+    readonly tiles: Tile[]
+    readonly units: Unit[]
+    readonly players: Player[]
     curTurn: number
 
     constructor(tiles:Tile[], units: Unit[], players: Player[]) {
         // need to generate all this...
         this.tiles = tiles
-        this.units = []
+        this.units = units
         this.players = players
         this.curTurn = 0
     }
@@ -122,8 +129,14 @@ export class Game {
         u.pos = dest
     }
 
-    spendMoney() {
-
+    buyUnit(dest: Tile, unitName: string, player=this.curPlayer) {
+        const newUnit = new Unit(dest, player, unitName)
+        if (player.trySpendMoney(newUnit.cost)) {
+            this.units.push(newUnit)
+        }
+        else {
+            console.warn(`Failed to buy ${unitName}, not enough money: ${player.money} < ${newUnit.cost}.`)
+        }
     }
 
     possibleMoves(u: Unit, moveDist: number = u.move) {
@@ -131,17 +144,17 @@ export class Game {
         return this.tiles.filter(t => dist(t, u.pos) <= moveDist)
     }
 
-    tick() {
-
-    }
-
-    startBuildingFortification(tile: Tile) {
+    startBuildingFortification(tile: Tile, player=this.curPlayer) {
         // takes 3 turns
     }
 
     resolveCombat(t: Tile) {
         const unitsOnTile = this.units.filter(u => u.pos == t)
-        let attacking = this.curTurn
+        let attackers = unitsOnTile.filter(u => u.owner != t.owner)
+        let defenders = unitsOnTile.filter(u=> u.owner == t.owner)
+        while (attackers.length > 0 && defenders.length > 0) {
+            // combat
+        }
     }
 
     nextTurn() {

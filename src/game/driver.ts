@@ -1,4 +1,4 @@
-import {UnitType, Attack, Defense, Descript, Move, Accuracy, CantHit} from './data'
+import {UnitType, Attack, Defense, Descript, Move, Accuracy, CantHit, Cost} from './data'
 import {Unit, Player, Game, Tile} from './board'
 
 const attack = (attacker: string, defenders: string[]) => {
@@ -15,7 +15,6 @@ let tile1 = new Tile(1,1,'tile1', 5);
 let units: Unit[] = []
 units = [...units, ...Object.keys(UnitType).map(t => new Unit(tile1, p1, t))]
 units = [...units, ...Object.keys(UnitType).map(t => new Unit(tile1, p2, t))]
-console.log(units)
 
 let game = new Game([tile1], units, [p1,p2])
 console.log(game.units)
