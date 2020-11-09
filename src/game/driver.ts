@@ -1,4 +1,4 @@
-import {UnitType, Attack, Defense, Descript, Move, Accuracy, CantHit, Cost} from './data'
+import {UnitType} from './data'
 import {Unit, Player, Game, Tile} from './board'
 
 const attack = (attacker: string, defenders: string[]) => {
@@ -17,5 +17,5 @@ units = [...units, ...Object.keys(UnitType).map(t => new Unit(tile1, p1, t))]
 units = [...units, ...Object.keys(UnitType).map(t => new Unit(tile1, p2, t))]
 
 let game = new Game([tile1], units, [p1,p2])
-console.log(game.units)
-game.units.forEach(u => console.log(u.id))
+// console.log(game.units)
+game.units.forEach(u => console.log(u.id, u.cost, '-->', game.queryUnits(tile1, game.players, [u.owner]).filter(enemy => u.canAttack(enemy)[0]).map(enemy => `${enemy.id} (${u.accuracy(enemy)})`)))

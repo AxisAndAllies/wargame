@@ -64,18 +64,18 @@ export const Move: Record<string, number> = {
     BOM: 6,
 }
 
-export const Accuracy: Record<string, Record<string, number>> = {
-    INF: {default: .6},
-    INFH: {default: .6},
-    APC: {default: .6},
-    ARTI: {default: .25},
-    AA: {default: .6, BOM: .2, FIG: .2, HELI: .4},
-    TANKL: {default: .6},
-    TANKH: {default: .6},
-    HELI: {default: .6},
-    FIG: {default: .4},
-    BOM: {default: .5},
-}
+// export const Accuracy: Record<string, Record<string, number>> = {
+//     INF: {default: .6},
+//     INFH: {default: .6},
+//     APC: {default: .6},
+//     ARTI: {default: .25},
+//     AA: {default: .6, BOM: .3, FIG: .3, HELI: .3},
+//     TANKL: {default: .6},
+//     TANKH: {default: .6},
+//     HELI: {default: .6},
+//     FIG: {default: .4},
+//     BOM: {default: .5},
+// }
 
 export const Cost: Record<string, number> = {
     INF: 1,

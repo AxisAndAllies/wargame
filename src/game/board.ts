@@ -1,5 +1,5 @@
-import {UnitType, Attack, Defense, Descript, Move, Accuracy, CantHit, Cost} from './data'
-import {animalId, numericId, alphaNumericId} from 'short-animal-id'
+import {UnitType, Attack, Defense, Descript, Move, CantHit, Cost} from './data'
+import {animalId, numericId, alphanumericId} from 'short-animal-id'
 export class Unit {
     pos: Tile
     readonly owner: Player
@@ -10,27 +10,30 @@ export class Unit {
         this.pos = initialPos
         this.owner = initialOwner
         this.name = unitType
-        this.id = this.owner.id + '_' + this.name + '_' + alphaNumericId()
+        this.id = this.owner.id + '_' + this.name + '_' + alphanumericId(3)
     }
 
     get isAttacker() {
         return this.pos.owner !== this.owner
     }
 
-    get attack(){return Attack[name]}
-    get defense(){return Defense[name]}
-    get descript(){return Descript[name]}
-    get move(){return Move[name]}
-    get cost(){return Cost[name]}
+    get attack(){return Attack[this.name]}
+    get defense(){return Defense[this.name]}
+    get descript(){return Descript[this.name]}
+    get move(){return Move[this.name]}
+    get cost(){return Cost[this.name]}
+
     accuracy(target: Unit){
-        let accLookup = Accuracy[name]
-        return accLookup[target.name] ?? accLookup['default']
+        return this.attack/10
+        // const accLookup = Accuracy[this.name]
+        // const multiplier = accLookup[target.name] ?? accLookup['default']/2
+        // return Math.round(multiplier*(this.attack/target.defense)*100)/100
     }
-    
+
     canAttack(target: Unit): [boolean, string] {
-        if (CantHit[name].includes(target.name))
+        if (CantHit[this.name].includes(target.name))
             return [false, 'Cannot attack target type']
-        if (Attack[name] < Defense[target.name])
+        if (Attack[this.name] < Defense[target.name])
             return [false, 'Attack less than target defense']
         return [true, '']
     }
@@ -122,6 +125,10 @@ export class Game {
 
     get curPlayer() {
         return this.players[this.curTurn]
+    }
+
+    queryUnits(tile: Tile, includedOwners: Player[]=[], excludedOwners: Player[]=[]){
+        return this.units.filter(u => u.pos == tile && includedOwners.includes(u.owner) && !excludedOwners.includes(u.owner))
     }
 
     moveUnit(u: Unit, dest: Tile) {
