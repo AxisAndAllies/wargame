@@ -50,6 +50,7 @@ export const Attack: Record<string, number> = {
     FIG: 5,
     BOM: 8,
 }
+export const MAX_ATTACK = 10;
 
 export const Move: Record<string, number> = {
     INF: 2,
@@ -108,9 +109,9 @@ export const CantHit: Record<string, string[]>= {
 
 /*
 
-AA has accuracy depending on what it's hitting
 
-bomber can hit 2 targets?
+
+bomber can hit 2 targets
 
 air units can go through hostile territories, attacking + taking AA fire, and go back in friendly territory
 
@@ -122,8 +123,6 @@ you can choose to "fortify" an area, which takes 3 turns + costs $$$, but on com
 
 cities gives -25% accuracy penalty to attackers to all attackers
 
-units are only resupplied when connected to resupply lines that enemies can destroy, after which they have 3 fights worth of ammo?
-
 IN combat:
     - each "round" consists of attacker fire, followed by defender fire
     - defender can retreat anytime, but can't fire for that round
@@ -132,5 +131,7 @@ TODO:
 factories?? (or can just produce in cities?)
 APC can carry 2 INF or INFH
 artillery can fire into adjacent regions without moving in, although would expose themselves to counter-battery fire
+AA has accuracy depending on what it's hitting?
+units are only resupplied when connected to resupply lines that enemies can destroy, after which they have 3 fights worth of ammo?
 
 */

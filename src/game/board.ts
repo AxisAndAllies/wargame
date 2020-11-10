@@ -1,41 +1,55 @@
-import {UnitType, Attack, Defense, Descript, Move, CantHit, Cost} from './data'
+import {UnitType, Attack, Defense, Descript, Move, CantHit, Cost, MAX_ATTACK} from './data'
 import {animalId, numericId, alphanumericId} from 'short-animal-id'
 export class Unit {
     pos: Tile
     readonly owner: Player
-    readonly name: string
+    readonly type: string
     readonly id: string
 
     constructor(initialPos: Tile, initialOwner: Player, unitType: string) {
         this.pos = initialPos
         this.owner = initialOwner
-        this.name = unitType
-        this.id = this.owner.id + '_' + this.name + '_' + alphanumericId(3)
+        this.type = unitType
+        this.id = this.owner.id + '_' + this.type + '_' + alphanumericId(3)
     }
 
     get isAttacker() {
         return this.pos.owner !== this.owner
     }
 
-    get attack(){return Attack[this.name]}
-    get defense(){return Defense[this.name]}
-    get descript(){return Descript[this.name]}
-    get move(){return Move[this.name]}
-    get cost(){return Cost[this.name]}
+    get attack(){return Attack[this.type]}
+    get defense(){return Defense[this.type]}
+    get descript(){return Descript[this.type]}
+    get move(){return Move[this.type]}
+    get cost(){return Cost[this.type]}
 
-    accuracy(target: Unit){
-        return this.attack/10
-        // const accLookup = Accuracy[this.name]
-        // const multiplier = accLookup[target.name] ?? accLookup['default']/2
-        // return Math.round(multiplier*(this.attack/target.defense)*100)/100
+    get accuracy() {
+        return this.attack/MAX_ATTACK
     }
 
+    // accuracy(target: Unit){
+    //     const accLookup = Accuracy[this.type]
+    //     const multiplier = accLookup[target.type] ?? accLookup['default']/2
+    //     return Math.round(multiplier*(this.attack/target.defense)*100)/100
+    // }
+
     canAttack(target: Unit): [boolean, string] {
-        if (CantHit[this.name].includes(target.name))
+        if (CantHit[this.type].includes(target.type))
             return [false, 'Cannot attack target type']
-        if (Attack[this.name] < Defense[target.name])
+        if (Attack[this.type] < Defense[target.type])
             return [false, 'Attack less than target defense']
         return [true, '']
+    }
+
+    fire(){
+        // returns num of hits
+        let numHits = 0
+        numHits += roll(this.accuracy) ? 1 : 0
+        if(this.type == UnitType.BOM){
+            // bombers roll 2x
+            numHits += roll(this.accuracy) ? 1 : 0
+        }
+        return numHits
     }
 
     possibleTargets(targets: Unit[]): Unit[] {
@@ -72,26 +86,26 @@ export class Fortification {
 export class Tile {
     x: number;
     y: number;
-    name: string;
+    type: string;
     value: number;
     owner: Player | null
     num_turns_owned: number = 0
    
-    constructor(initialX: number, initialY: number, name: string, value: number) {
+    constructor(initialX: number, initialY: number, type: string, value: number) {
         this.x = initialX;
         this.y = initialY
-        this.name = name
+        this.type = type
         this.value = value
         this.owner = null
     }
 }
 
 export class Player {
-    readonly name: string;
+    readonly type: string;
     money: number
     readonly id: string
-    constructor(name: string, money: number) {
-        this.name = name
+    constructor(type: string, money: number) {
+        this.type = type
         this.money = money
         this.id = animalId() + numericId()
     }
@@ -109,9 +123,12 @@ const dist = (a: Tile, b: Tile) => {
     return Math.abs(b.y - a.y) + Math.abs(b.x - a.x)
 }
 
+// returns whether a roll is a success (input between 0 --> 1)
+const roll = (probSuccess: number) => Math.random() < probSuccess
+
 export class Game {
     readonly tiles: Tile[]
-    readonly units: Unit[]
+    units: Unit[]
     readonly players: Player[]
     curTurn: number
 
@@ -127,13 +144,22 @@ export class Game {
         return this.players[this.curTurn]
     }
 
-    queryUnits(tile: Tile, includedOwners: Player[]=[], excludedOwners: Player[]=[]){
+    removeUnits(units: Unit[]) {
+        const ids = units.map(u => u.id)
+        this.units = this.units.filter(u => !ids.includes(u.id))
+    }
+
+    queryUnits(tile: Tile, includedOwners: Player[], excludedOwners: Player[]=[]){
         return this.units.filter(u => u.pos == tile && includedOwners.includes(u.owner) && !excludedOwners.includes(u.owner))
     }
 
     moveUnit(u: Unit, dest: Tile) {
         // TODO: check able to move there
+        if (dist(dest, u.pos) > u.move) {
+            return false
+        }
         u.pos = dest
+        return true
     }
 
     buyUnit(dest: Tile, unitName: string, player=this.curPlayer) {
@@ -155,12 +181,43 @@ export class Game {
         // takes 3 turns
     }
 
+    retreat(player: Player){
+
+    }
+
+    pickCasualties(player: Player, tile: Tile, hits: Record<string, number>) {
+        let candidates = this.queryUnits(tile, [player]).sort((a,b) => b.attack - a.attack)
+        this.removeUnits(candidates)
+    }
+
     resolveCombat(t: Tile) {
         const unitsOnTile = this.units.filter(u => u.pos == t)
         let attackers = unitsOnTile.filter(u => u.owner != t.owner)
         let defenders = unitsOnTile.filter(u=> u.owner == t.owner)
         while (attackers.length > 0 && defenders.length > 0) {
-            // combat
+            let attackerHits: Record<string, number> = {}
+            let defenderHits: Record<string, number> = {}
+            Object.keys(UnitType).forEach(type => {
+                attackerHits[type] = 0
+                defenderHits[type] = 0
+            })
+            attackers.forEach(a => {
+                let numHits = a.fire()
+                attackerHits[a.type] += numHits
+                console.log(a.id, numHits, 'hits')
+            })
+            // defender can take casualties + retreat
+            defenders.forEach(a => {
+                let numHits = a.fire()
+                defenderHits[a.type] += numHits
+                console.log(a.id, numHits, 'hits')
+            })
+            // attacker can take casualties + retreat
+            console.log(attackerHits)
+            this.pickCasualties(attackers[0].owner, t, defenderHits)
+            console.log(defenderHits)
+            this.pickCasualties(defenders[0].owner, t, attackerHits)
+            break
         }
     }
 
@@ -177,7 +234,7 @@ Game flow:
 - spend money
     - build unit
     - build fortification
-- move unit
+- move all units
 for each tile:
     - resolve combat
     - retreat to friendly tile if defeat
