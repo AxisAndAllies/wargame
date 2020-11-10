@@ -13,9 +13,17 @@ const tile1 = new Tile(1,1,'tile1', 5);
 tile1.owner = p1;
 
 let units: Unit[] = []
-units = [...units, ...Object.keys(UnitType).map(t => new Unit(tile1, p1, t))]
-units = [...units, ...Object.keys(UnitType).map(t => new Unit(tile1, p2, t))]
-
+const a = [new Unit(tile1, p1, UnitType.INF), 
+    new Unit(tile1, p1, UnitType.INF),
+    new Unit(tile1, p1, UnitType.INF),
+    new Unit(tile1, p1, UnitType.FIG),
+    new Unit(tile1, p1, UnitType.BOM)]
+const b = [new Unit(tile1, p2, UnitType.INFH), 
+    new Unit(tile1, p2, UnitType.INFH), 
+    new Unit(tile1, p2, UnitType.TANKL),
+    new Unit(tile1, p2, UnitType.TANKH),
+    new Unit(tile1, p2, UnitType.HELI)]
+units = [...units, ...a, ...b]
 let game = new Game([tile1], units, [p1,p2])
 // console.log(game.units)
 // game.units.forEach(u => console.log(u.id, u.cost, '-->', game.queryUnits(tile1, game.players, [u.owner]).filter(enemy => u.canAttack(enemy)[0]).map(enemy => `${enemy.id} (${u.accuracy(enemy)})`)))
