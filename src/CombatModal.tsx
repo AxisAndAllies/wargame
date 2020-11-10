@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Box, Button, Flex, Input, Label, Text } from 'theme-ui'
 import type { Unit } from './game/board'
-import { UnitType } from './game/data'
+import { NumMap, UnitType } from './game/data'
 import mockExports from './game/driver'
 
 const UnitStack = ({
@@ -9,17 +9,49 @@ const UnitStack = ({
     onSubmit,
 }: {
     units: Unit[]
-    onSubmit: (unitMap: Record<string, number>) => void
+    onSubmit: (unitMap: NumMap) => void
 }) => {
-    const { selected, setSelected } = useState({})
-    const maxMap: Record<string, number> = {}
-    Object.keys(UnitType).forEach((type) => {
-        maxMap[type] = units.filter((u) => u.type == type).length
-        if (maxMap[type] == 0) {
-            delete maxMap[type]
-        }
-    })
+    const [selected, setSelected] = useState<NumMap>({})
+    const maxMap = useMemo(() => {
+        let tmp: NumMap = {}
+        Object.keys(UnitType).forEach((type) => {
+            tmp[type] = units.filter((u) => u.type == type).length
+            if (tmp[type] == 0) {
+                delete tmp[type]
+            }
+        })
+        return tmp
+    }, [units])
+    const setTypeVal = (unitType: string, val: number) => {
+        setSelected((prevState) => ({
+            ...prevState,
+            [unitType]: val,
+        }))
+    }
+    useEffect(() => {
+        Object.keys(UnitType).forEach((type) => {
+            setTypeVal(type, 0)
+        })
+    }, [units])
 
+    const buttonStyle = {
+        backgroundColor: 'white',
+        color: 'black',
+        border: '1px solid black',
+        padding: '',
+        boxShadow: '3px 5px #999',
+        '&:hover': {
+            boxShadow: '3px 5px #555',
+            border: '1px solid blue',
+        },
+        '&:active': {
+            boxShadow: '2px 2px #999',
+            transform: `translate(1px, 3px)`,
+        },
+        '&:disabled': {
+            opacity: '30%',
+        },
+    }
     return (
         <>
             {Object.keys(maxMap).map((t) => (
@@ -30,50 +62,53 @@ const UnitStack = ({
                     }}
                     py={2}
                     pr={4}
+                    key={t}
                 >
                     <Box>
                         <Button
-                            sx={{
-                                backgroundColor: 'white',
-                                color: 'black',
-                                border: '1px solid black',
-                                padding: '',
-                            }}
+                            sx={buttonStyle}
                             mx={2}
-                            onClick={() => {}}
-                        >
-                            +
-                        </Button>
-                        <Button
-                            sx={{
-                                backgroundColor: 'white',
-                                color: 'black',
-                                border: '1px solid black',
-                                padding: '',
+                            onClick={() => {
+                                setTypeVal(t, selected[t] - 1)
                             }}
-                            mx={2}
+                            disabled={selected[t] == 0}
                         >
                             -
                         </Button>
                         <Button
-                            sx={{
-                                backgroundColor: 'white',
-                                color: 'black',
-                                border: '1px solid black',
-                                padding: '',
-                            }}
+                            sx={buttonStyle}
                             mx={2}
+                            onClick={() => {
+                                setTypeVal(t, selected[t] + 1)
+                            }}
+                            disabled={selected[t] == maxMap[t]}
+                        >
+                            +
+                        </Button>
+
+                        <Button
+                            sx={buttonStyle}
+                            mx={2}
+                            onClick={() => {
+                                setTypeVal(t, maxMap[t])
+                            }}
                         >
                             All
                         </Button>
                     </Box>
                     <Text ml={4}>
-                        {maxMap[t]}x {t}
+                        {selected[t]}/{maxMap[t]}x {t}
                     </Text>
                 </Flex>
             ))}
             <Box my={2} />
-            <Button>Submit</Button>
+            <Button
+                onClick={() => {
+                    onSubmit(selected)
+                }}
+            >
+                Submit
+            </Button>
         </>
     )
 }
@@ -104,11 +139,21 @@ const CombatModal = () => {
                 <Flex sx={{ minHeight: '50%' }}>
                     <Box sx={{ width: '50%' }}>
                         <Text sx={{ fontSize: '1.5em' }}>Attackers</Text>
-                        <UnitStack units={attackers} onSubmit={() => {}} />
+                        <UnitStack
+                            units={attackers}
+                            onSubmit={(submitted: NumMap) => {
+                                console.log(submitted)
+                            }}
+                        />
                     </Box>
                     <Box sx={{ width: '50%' }}>
                         <Text sx={{ fontSize: '1.5em' }}>Defenders</Text>
-                        <UnitStack units={defenders} onSubmit={() => {}} />
+                        <UnitStack
+                            units={defenders}
+                            onSubmit={(submitted: NumMap) => {
+                                console.log(submitted)
+                            }}
+                        />
                     </Box>
                 </Flex>
                 <Box>footer</Box>

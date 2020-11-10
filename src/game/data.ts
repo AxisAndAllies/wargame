@@ -11,8 +11,11 @@ export const UnitType: Record<string, string> = {
     FIG: "FIG",
     BOM: "BOM",
 }
+export type NumMap = Record<string, number>
+export type StrMap = Record<string, string>
 
-export const Descript: Record<string, string> = {
+
+export const Descript: StrMap = {
     INF: "infantry",
     INFH: "heavy infantry (anti-tank, anti-aircraft)",
     APC: "armored personel carrier",
@@ -25,7 +28,7 @@ export const Descript: Record<string, string> = {
     BOM: "bomber",
 }
 
-export const Defense: Record<string, number> = {
+export const Defense: NumMap = {
     INF: 1,
     INFH: 1,
     APC: 2,
@@ -38,7 +41,7 @@ export const Defense: Record<string, number> = {
     BOM: 2,
 }
 
-export const Attack: Record<string, number> = {
+export const Attack: NumMap = {
     INF: 2,
     INFH: 3,
     APC: 3,
@@ -52,7 +55,7 @@ export const Attack: Record<string, number> = {
 }
 export const MAX_ATTACK = 10;
 
-export const Move: Record<string, number> = {
+export const Move: NumMap = {
     INF: 2,
     INFH: 2,
     APC: 4,
@@ -65,7 +68,7 @@ export const Move: Record<string, number> = {
     BOM: 6,
 }
 
-// export const Accuracy: Record<string, Record<string, number>> = {
+// export const Accuracy: Record<string, NumMap> = {
 //     INF: {default: .6},
 //     INFH: {default: .6},
 //     APC: {default: .6},
@@ -78,7 +81,7 @@ export const Move: Record<string, number> = {
 //     BOM: {default: .5},
 // }
 
-export const Cost: Record<string, number> = {
+export const Cost: NumMap = {
     INF: 1,
     INFH: 2,
     APC: 4,

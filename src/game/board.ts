@@ -184,7 +184,7 @@ export class Game {
 
     }
 
-    removeCasualties(player: Player, tile: Tile, unitMap: Record<string, number>) {
+    removeCasualties(player: Player, tile: Tile, unitMap: NumMap) {
         /**
          * unitMap is a map of unitType: number to remove
          * eg. {INF: 3, TANKL: 2, HELI: 4}
@@ -210,8 +210,8 @@ export class Game {
 
     resolveCombatRound(t: Tile) {
         let { attackers, defenders } = this.getCombatants(t)
-        let attackerHits: Record<string, number> = {}
-        let defenderHits: Record<string, number> = {}
+        let attackerHits: NumMap = {}
+        let defenderHits: NumMap = {}
         Object.keys(UnitType).forEach(type => {
             attackerHits[type] = 0
             defenderHits[type] = 0

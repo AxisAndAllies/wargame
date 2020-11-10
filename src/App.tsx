@@ -107,7 +107,7 @@ const Menu: React.FC<{ coords: Coords }> = ({ coords }) => {
 }
 
 const UnitGroup = ({ units }: { units: string[] }) => {
-    const groups: Record<string, number> = {}
+    const groups: NumMap = {}
     Object.keys(UnitType).forEach((k) => (groups[k] = 0))
     units.forEach((u) => (groups[u] += 1))
     return (
