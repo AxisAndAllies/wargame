@@ -1,5 +1,6 @@
 import React, { useState, ReactChild } from 'react'
 import { Box, Flex, Button, Badge, ThemeProvider } from 'theme-ui'
+import CombatModal from './CombatModal'
 import { UnitType, Descript } from './game/data'
 import theme from './theme'
 
@@ -142,7 +143,8 @@ function App({}: AppProps) {
 
     return (
         <div className="App">
-            <Menu coords={focusedCell} />
+            <CombatModal />
+            {/* <Menu coords={focusedCell} /> */}
             <Box>
                 {gameState.map((row, i) => (
                     <Flex key={`row${i}`}>

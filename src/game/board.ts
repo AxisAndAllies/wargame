@@ -1,5 +1,5 @@
-import {UnitType, Attack, Defense, Descript, Move, CantHit, Cost, MAX_ATTACK} from './data'
-import {animalId, numericId, alphanumericId} from 'short-animal-id'
+import { UnitType, Attack, Defense, Descript, Move, CantHit, Cost, MAX_ATTACK } from './data'
+import { animalId, numericId, alphanumericId } from 'short-animal-id'
 export class Unit {
     pos: Tile
     readonly owner: Player
@@ -17,14 +17,14 @@ export class Unit {
         return this.pos.owner !== this.owner
     }
 
-    get attack(){return Attack[this.type]}
-    get defense(){return Defense[this.type]}
-    get descript(){return Descript[this.type]}
-    get move(){return Move[this.type]}
-    get cost(){return Cost[this.type]}
+    get attack() { return Attack[this.type] }
+    get defense() { return Defense[this.type] }
+    get descript() { return Descript[this.type] }
+    get move() { return Move[this.type] }
+    get cost() { return Cost[this.type] }
 
     get accuracy() {
-        return this.attack/MAX_ATTACK
+        return this.attack / MAX_ATTACK
     }
 
     // accuracy(target: Unit){
@@ -41,11 +41,11 @@ export class Unit {
         return [true, '']
     }
 
-    fire(){
+    fire() {
         // returns num of hits
         let numHits = 0
         numHits += roll(this.accuracy) ? 1 : 0
-        if(this.type == UnitType.BOM){
+        if (this.type == UnitType.BOM) {
             // bombers roll 2x
             numHits += roll(this.accuracy) ? 1 : 0
         }
@@ -71,7 +71,7 @@ export class City {
 
 export class Fortification {
     readonly pos: Tile
-    static readonly cost: number  = 100
+    static readonly cost: number = 100
     turnsRemaining: number
     constructor(initialPos: Tile) {
         this.pos = initialPos
@@ -90,7 +90,7 @@ export class Tile {
     value: number;
     owner: Player | null
     num_turns_owned: number = 0
-   
+
     constructor(initialX: number, initialY: number, type: string, value: number) {
         this.x = initialX;
         this.y = initialY
@@ -132,7 +132,7 @@ export class Game {
     readonly players: Player[]
     curTurn: number
 
-    constructor(tiles:Tile[], units: Unit[], players: Player[]) {
+    constructor(tiles: Tile[], units: Unit[], players: Player[]) {
         // need to generate all this...
         this.tiles = tiles
         this.units = units
@@ -144,12 +144,11 @@ export class Game {
         return this.players[this.curTurn]
     }
 
-    removeUnits(units: Unit[]) {
-        const ids = units.map(u => u.id)
-        this.units = this.units.filter(u => !ids.includes(u.id))
+    _removeUnits(unitIds: string[]) {
+        this.units = this.units.filter(u => !unitIds.includes(u.id))
     }
 
-    queryUnits(tile: Tile, includedOwners: Player[], excludedOwners: Player[]=[]){
+    queryUnits(tile: Tile, includedOwners: Player[], excludedOwners: Player[] = []) {
         return this.units.filter(u => u.pos == tile && includedOwners.includes(u.owner) && !excludedOwners.includes(u.owner))
     }
 
@@ -162,7 +161,7 @@ export class Game {
         return true
     }
 
-    buyUnit(dest: Tile, unitName: string, player=this.curPlayer) {
+    buyUnit(dest: Tile, unitName: string, player = this.curPlayer) {
         const newUnit = new Unit(dest, player, unitName)
         if (player.trySpendMoney(newUnit.cost)) {
             this.units.push(newUnit)
@@ -177,52 +176,73 @@ export class Game {
         return this.tiles.filter(t => dist(t, u.pos) <= moveDist)
     }
 
-    startBuildingFortification(tile: Tile, player=this.curPlayer) {
+    startBuildingFortification(tile: Tile, player = this.curPlayer) {
         // takes 3 turns
     }
 
-    retreat(player: Player){
+    retreat(player: Player) {
 
     }
 
-    pickCasualties(player: Player, tile: Tile, hits: Record<string, number>) {
-        let candidates = this.queryUnits(tile, [player]).sort((a,b) => b.attack - a.attack)
-        this.removeUnits(candidates)
+    removeCasualties(player: Player, tile: Tile, unitMap: Record<string, number>) {
+        /**
+         * unitMap is a map of unitType: number to remove
+         * eg. {INF: 3, TANKL: 2, HELI: 4}
+         */
+        
+        const candidates = this.queryUnits(tile, [player])
+        const deadIds: string[] = []
+        candidates.forEach(u => {
+            if(unitMap[u.type] > 0) {
+                deadIds.push(u.id)
+                unitMap[u.type] -= 1
+            }
+        })
+        this._removeUnits(deadIds)
+
+    }
+
+    getCombatants(t: Tile): { attackers: Unit[], defenders: Unit[] } {
+        let attackers = this.queryUnits(t, this.players, [t.owner!])
+        let defenders = this.queryUnits(t, [t.owner!])
+        return { attackers, defenders }
+    }
+
+    resolveCombatRound(t: Tile) {
+        let { attackers, defenders } = this.getCombatants(t)
+        let attackerHits: Record<string, number> = {}
+        let defenderHits: Record<string, number> = {}
+        Object.keys(UnitType).forEach(type => {
+            attackerHits[type] = 0
+            defenderHits[type] = 0
+        })
+        attackers.forEach(a => {
+            let numHits = a.fire()
+            attackerHits[a.type] += numHits
+            console.log(a.id, numHits, 'hits')
+        })
+        // defender can take casualties + retreat
+        defenders.forEach(a => {
+            let numHits = a.fire()
+            defenderHits[a.type] += numHits
+            console.log(a.id, numHits, 'hits')
+        })
+        // attacker can take casualties + retreat
+        console.log(attackerHits)
+        this.pickCasualties(attackers[0].owner, t, defenderHits)
+        console.log(defenderHits)
+        this.pickCasualties(defenders[0].owner, t, attackerHits)
     }
 
     resolveCombat(t: Tile) {
-        const unitsOnTile = this.units.filter(u => u.pos == t)
-        let attackers = unitsOnTile.filter(u => u.owner != t.owner)
-        let defenders = unitsOnTile.filter(u=> u.owner == t.owner)
         while (attackers.length > 0 && defenders.length > 0) {
-            let attackerHits: Record<string, number> = {}
-            let defenderHits: Record<string, number> = {}
-            Object.keys(UnitType).forEach(type => {
-                attackerHits[type] = 0
-                defenderHits[type] = 0
-            })
-            attackers.forEach(a => {
-                let numHits = a.fire()
-                attackerHits[a.type] += numHits
-                console.log(a.id, numHits, 'hits')
-            })
-            // defender can take casualties + retreat
-            defenders.forEach(a => {
-                let numHits = a.fire()
-                defenderHits[a.type] += numHits
-                console.log(a.id, numHits, 'hits')
-            })
-            // attacker can take casualties + retreat
-            console.log(attackerHits)
-            this.pickCasualties(attackers[0].owner, t, defenderHits)
-            console.log(defenderHits)
-            this.pickCasualties(defenders[0].owner, t, attackerHits)
+            this.resolveCombatRound(t)
             break
         }
     }
 
     nextTurn() {
-        this.curTurn = (this.curTurn += 1)%this.players.length
+        this.curTurn = (this.curTurn += 1) % this.players.length
     }
 }
 
