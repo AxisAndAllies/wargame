@@ -1,23 +1,23 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Box, Button, Flex, Text } from 'theme-ui'
 import { Combat, Game, sumDict, Unit } from './game/board'
-import { Descript, NumMap, UnitType } from './game/data'
+import { Descript, Hit, NumMap, UnitType } from './game/data'
 
 const UnitStack = ({
     units,
     attackerType,
     onSubmit,
-    maxHits,
+    maxHits = 0,
 }: {
     units: Unit[]
-    attackerType: string
-    maxHits: number
+    attackerType?: string
+    maxHits?: number
     onSubmit: (unitMap: NumMap) => void
 }) => {
     const [selected, setSelected] = useState<NumMap>({})
     const maxMap = useMemo(() => Game.mapUnits(units, (u) => 1), [units])
     const isValid = (type: string) =>
-        Boolean(attackerType) && Unit.canBeAttackedBy(attackerType, type)
+        Boolean(attackerType) && Unit.canBeAttackedBy(attackerType!, type)
     const setTypeVal = (unitType: string, val: number) => {
         setSelected((prevState) => ({
             ...prevState,
@@ -133,16 +133,17 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
     const [{ attackers, defenders }, setCombatants] = useState(
         combat.getCombatants()
     )
-    const [pendingHits, setPendingHits] = useState<NumMap>(combat.pendingHits)
-    const [firstHit, setFirstHit] = useState<{
-        type?: string
-        numHits?: number
-    }>({})
+    const [pendingHits, setPendingHits] = useState<Hit[]>(combat.pendingHits)
+    const [firstHit, setFirstHit] = useState<Hit>()
+
+    /**
+     * TODO[!!!!!]: need to handle case where
+     * no defender units can get hit,
+     * then skip firstHit
+     */
     useEffect(() => {
-        let type = Object.keys(pendingHits)[0]
-        let numHits = pendingHits[type]
-        setFirstHit({ type, numHits })
-    }, [sumDict(pendingHits)])
+        setFirstHit(pendingHits[0])
+    }, [pendingHits[0]])
     return (
         <Flex
             sx={{
@@ -168,10 +169,11 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                         {!combat.isAttackerTurn ? (
                             <UnitStack
                                 units={attackers}
-                                attackerType={firstHit.type!}
-                                maxHits={firstHit.numHits!}
+                                attackerType={firstHit?.type}
+                                maxHits={firstHit?.numHits}
                                 onSubmit={(map) => {
-                                    combat.removeHitsFor(map, firstHit.type!)
+                                    if (!firstHit) return
+                                    combat.removeHitsFor(map)
                                     setPendingHits(combat.pendingHits)
                                 }}
                             />
@@ -184,10 +186,11 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                         {combat.isAttackerTurn ? (
                             <UnitStack
                                 units={defenders}
-                                attackerType={firstHit.type!}
-                                maxHits={firstHit.numHits!}
+                                attackerType={firstHit?.type}
+                                maxHits={firstHit?.numHits}
                                 onSubmit={(map) => {
-                                    combat.removeHitsFor(map, firstHit.type!)
+                                    if (!firstHit) return
+                                    combat.removeHitsFor(map)
                                     setPendingHits(combat.pendingHits)
                                     // need the following line to work and idk why
                                     setCombatants(combat.getCombatants())
@@ -204,14 +207,44 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                         combat.recordHits()
                         setPendingHits(combat.pendingHits)
                     }}
+                    mx={2}
                 >
                     Fire
                 </Button>
+                <Button
+                    variant="secondary"
+                    onClick={() => {
+                        combat.retreat()
+                    }}
+                    disabled={Boolean(firstHit?.type)}
+                    mx={2}
+                >
+                    Retreat
+                </Button>
                 <Box my={4} />
                 <Box>
-                    {firstHit.type} hit {firstHit.numHits} times
+                    {firstHit && (
+                        <Text sx={{ fontSize: '1.5em' }}>
+                            {Descript[firstHit.type!]} hits:{' '}
+                            <strong>{firstHit.numHits}</strong>
+                        </Text>
+                    )}
                 </Box>
-                <Box>{JSON.stringify(pendingHits)}</Box>
+                <Box>
+                    {pendingHits.map(({ type, numHits }, ind) => (
+                        <>
+                            {ind > 0 && (
+                                <Text
+                                    color="gray"
+                                    my={2}
+                                    key={`${type}_${ind}`}
+                                >
+                                    {Descript[type]} hits: {numHits}
+                                </Text>
+                            )}
+                        </>
+                    ))}
+                </Box>
             </Box>
         </Flex>
     )

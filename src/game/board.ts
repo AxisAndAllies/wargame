@@ -1,4 +1,4 @@
-import { UnitType, Attack, Defense, Descript, Move, CantHit, Cost, MAX_ATTACK, NumMap } from './data'
+import { UnitType, Attack, Defense, Descript, Move, CantHit, Cost, MAX_ATTACK, NumMap, Hit } from './data'
 import { animalId, numericId, alphanumericId } from 'short-animal-id'
 export class Unit {
     pos: Tile
@@ -43,6 +43,11 @@ export class Unit {
 
     static canBeAttackedBy(attackerType: string, unitType: string) {
         return !CantHit[attackerType].includes(unitType) && Attack[attackerType] >= Defense[unitType]
+    }
+
+    static getAttackableUnitTypes(unitType: string) {
+        // return all unit types this unit can attack
+        return Object.keys(UnitType).filter(type => Unit.canBeAttackedBy(unitType, type))
     }
 
     fire() {
@@ -131,7 +136,7 @@ export class Combat {
     attacker: Player
     defender: Player
     // keeps track of units left to remove that were hit
-    pendingHits: NumMap= {}
+    pendingHits: Hit[]= []
     constructor(game: Game, tile: Tile, attacker: Player) {
         this.game = game
         this.tile = tile
@@ -155,7 +160,7 @@ export class Combat {
         if (Object.keys(this.pendingHits).length > 0) {
             return
         }
-        let hits;
+        let hits: Hit[];
         if (this.isAttackerTurn) {
             hits = Combat.getHitsFrom(attackers)
         }
@@ -172,16 +177,14 @@ export class Combat {
         this.turn = (this.isAttackerTurn ? CombatRole.DEFENDER : CombatRole.ATTACKER)
     }
 
-    removeHitsFor(unitMap: NumMap, unitType: string) {
+    removeHitsFor(unitMap: NumMap) {
+        // TODO: support arbitrary unittype
         const sum = sumDict(unitMap)
-        if (unitType in this.pendingHits){
-            this.pendingHits[unitType] -= sum
-        }
-        if (this.pendingHits[unitType] <= 0) {
-            delete this.pendingHits[unitType]
+        this.pendingHits[0].numHits -= sum
+        if (this.pendingHits[0].numHits <= 0) {
+            this.pendingHits.shift()
         }
 
-        console.log('removing', sum, 'from', unitType, this.pendingHits)
         const curPlayer = this.isAttackerTurn ? this.defender : this.attacker
         this.game.removeCasualties(curPlayer, this.tile, unitMap)
     }
@@ -193,8 +196,18 @@ export class Combat {
         return { attackers, defenders }
     }
 
-    static getHitsFrom(units: Unit[]) {
-        return Game.mapUnits(units, u => u.fire())
+    retreat(){
+
+    }
+
+    static getHitsFrom(units: Unit[]): Hit[] {
+        const hitsMap = Game.mapUnits(units, u => u.fire())
+        const result = Object.entries(hitsMap)
+        .map(([type, numHits]) => ({type, numHits }))
+        // sort by selectivity ascending, then by attack ascending
+        .sort((a,b) => Unit.getAttackableUnitTypes(a.type).length - Unit.getAttackableUnitTypes(b.type).length 
+        || Attack[a.type] - Attack[b.type])
+        return result
     }
 
 }

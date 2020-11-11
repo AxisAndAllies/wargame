@@ -1,4 +1,8 @@
 
+export type NumMap = Record<string, number>
+export type StrMap = Record<string, string>
+export type Hit = {type: string, numHits: number}
+
 export const UnitType: Record<string, string> = {
     INF: "INF",
     INFH: "INFH",
@@ -11,9 +15,6 @@ export const UnitType: Record<string, string> = {
     FIG: "FIG",
     BOM: "BOM",
 }
-export type NumMap = Record<string, number>
-export type StrMap = Record<string, string>
-
 
 export const Descript: StrMap = {
     INF: "infantry",
@@ -111,8 +112,7 @@ export const CantHit: Record<string, string[]>= {
 }
 
 /*
-
-
+UNIQUENESS
 
 bomber can hit 2 targets
 
@@ -136,5 +136,16 @@ APC can carry 2 INF or INFH
 artillery can fire into adjacent regions without moving in, although would expose themselves to counter-battery fire
 AA has accuracy depending on what it's hitting?
 units are only resupplied when connected to resupply lines that enemies can destroy, after which they have 3 fights worth of ammo?
+
+*/
+
+/**ISSUES
+
+even if sorting hits by most selective --> least selective, can still game the system?
+- also sort by least attack --> most attack tiebreaker
+eg. 1 INFH hit, 1 AA hit, you have 1 tankl, 1 fig
+    - ideally would be both hit (infh --> tankl, aa --> fig)
+    - but in actuality, can do (aa --> tanlk), in which case fig lives since inf can't attack fig
+
 
 */
