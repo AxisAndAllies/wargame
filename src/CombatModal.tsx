@@ -37,6 +37,7 @@ const UnitStack = ({
                     sx={{
                         alignItems: 'center',
                         justifyContent: 'flex-start',
+                        userSelect: 'none',
                     }}
                     py={2}
                     pr={4}
@@ -57,6 +58,7 @@ const UnitStack = ({
                         >
                             -
                         </Button>
+                        <strong>{selected[t]}</strong>
                         <Button
                             variant="secondary"
                             mx={2}
@@ -85,11 +87,8 @@ const UnitStack = ({
                             All
                         </Button>
                     </Box>
-                    <Text ml={4} sx={{ fontSize: '18px', userSelect: 'none' }}>
-                        <strong>
-                            {selected[t]}/{maxMap[t]}
-                        </strong>{' '}
-                        {Descript[t]}
+                    <Text ml={4} sx={{ fontSize: '18px' }}>
+                        <strong>{maxMap[t] - selected[t]}</strong> {Descript[t]}
                     </Text>
                 </Flex>
             ))}
@@ -103,6 +102,8 @@ const UnitStack = ({
                 sx={{
                     visibility: !attackerType ? 'hidden' : 'visible',
                 }}
+                disabled={sumDict(selected) < maxHits}
+                hidden
             >
                 Submit
             </Button>
@@ -110,18 +111,16 @@ const UnitStack = ({
     )
 }
 
-const TextUnitStack = ({ units }: { units: Unit[] }) => {
-    const maxMap = useMemo(() => Game.mapUnits(units, (u) => 1), [units])
-
+const TextUnitStack = ({ unitMap }: { unitMap: NumMap }) => {
     return (
         <Box py={2}>
-            {Object.keys(maxMap).map((t) => (
+            {Object.keys(unitMap).map((t) => (
                 <Text
                     sx={{ fontSize: '18px', userSelect: 'none' }}
                     py={2}
                     key={t}
                 >
-                    <strong>{maxMap[t]}</strong> {Descript[t]}
+                    <strong>{unitMap[t]}</strong> {Descript[t]}
                 </Text>
             ))}
         </Box>
@@ -134,6 +133,8 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
         combat.getCombatants()
     )
     const [pendingHits, setPendingHits] = useState<Hit[]>(combat.pendingHits)
+    const [markedDead, setMarkedDead] = useState<NumMap>(combat.markedDead)
+    const [hasFired, setHasFired] = useState(combat.hasFired)
     const [firstHit, setFirstHit] = useState<Hit>()
 
     /**
@@ -144,6 +145,15 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
     useEffect(() => {
         setFirstHit(pendingHits[0])
     }, [pendingHits[0]])
+
+    const submitHits = (map: NumMap) => {
+        if (!firstHit) return
+        combat.removeHits(map)
+        setPendingHits(combat.pendingHits)
+        // need the following line to work and idk why
+        setCombatants(combat.getCombatants())
+        setMarkedDead(combat.markedDead)
+    }
     return (
         <Flex
             sx={{
@@ -171,14 +181,12 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                                 units={attackers}
                                 attackerType={firstHit?.type}
                                 maxHits={firstHit?.numHits}
-                                onSubmit={(map) => {
-                                    if (!firstHit) return
-                                    combat.removeHitsFor(map)
-                                    setPendingHits(combat.pendingHits)
-                                }}
+                                onSubmit={submitHits}
                             />
                         ) : (
-                            <TextUnitStack units={attackers} />
+                            <TextUnitStack
+                                unitMap={Game.mapUnits(attackers, (u) => 1)}
+                            />
                         )}
                     </Box>
                     <Box sx={{ width: '50%' }}>
@@ -188,16 +196,12 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                                 units={defenders}
                                 attackerType={firstHit?.type}
                                 maxHits={firstHit?.numHits}
-                                onSubmit={(map) => {
-                                    if (!firstHit) return
-                                    combat.removeHitsFor(map)
-                                    setPendingHits(combat.pendingHits)
-                                    // need the following line to work and idk why
-                                    setCombatants(combat.getCombatants())
-                                }}
+                                onSubmit={submitHits}
                             />
                         ) : (
-                            <TextUnitStack units={defenders} />
+                            <TextUnitStack
+                                unitMap={Game.mapUnits(defenders, (u) => 1)}
+                            />
                         )}
                     </Box>
                 </Flex>
@@ -206,8 +210,10 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                     onClick={() => {
                         combat.recordHits()
                         setPendingHits(combat.pendingHits)
+                        setHasFired(combat.hasFired)
                     }}
                     mx={2}
+                    disabled={combat.hasFired}
                 >
                     Fire
                 </Button>
@@ -220,6 +226,17 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                     mx={2}
                 >
                     Retreat
+                </Button>
+                <Button
+                    variant="secondary"
+                    onClick={() => {
+                        combat.nextTurn()
+                        setHasFired(combat.hasFired)
+                    }}
+                    disabled={Boolean(firstHit?.type) || !hasFired}
+                    mx={2}
+                >
+                    Next Turn
                 </Button>
                 <Box my={4} />
                 <Box>
@@ -244,6 +261,9 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                             )}
                         </>
                     ))}
+                </Box>
+                <Box sx={{ color: 'red' }}>
+                    <TextUnitStack unitMap={markedDead} />
                 </Box>
             </Box>
         </Flex>

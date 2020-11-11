@@ -16,11 +16,20 @@ let units: Unit[] = []
 const a = [new Unit(tile1, p1, UnitType.INF), 
     new Unit(tile1, p1, UnitType.INF),
     new Unit(tile1, p1, UnitType.INF),
+    new Unit(tile1, p1, UnitType.APC),
+    new Unit(tile1, p1, UnitType.APC),
+    new Unit(tile1, p1, UnitType.ARTI),
+    new Unit(tile1, p1, UnitType.ARTI),
+    new Unit(tile1, p1, UnitType.ARTI),
     new Unit(tile1, p1, UnitType.FIG),
     new Unit(tile1, p1, UnitType.BOM)]
 const b = [new Unit(tile1, p2, UnitType.INFH), 
     new Unit(tile1, p2, UnitType.INFH), 
-    new Unit(tile1, p2, UnitType.TANKL),
+    new Unit(tile1, p2, UnitType.INFH), 
+    new Unit(tile1, p2, UnitType.INFH), 
+    new Unit(tile1, p2, UnitType.INFH), 
+    new Unit(tile1, p2, UnitType.AA),
+    new Unit(tile1, p2, UnitType.AA),
     new Unit(tile1, p2, UnitType.TANKH),
     new Unit(tile1, p2, UnitType.HELI)]
 units = [...units, ...a, ...b]

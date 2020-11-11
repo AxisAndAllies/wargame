@@ -132,16 +132,22 @@ export class Combat {
 
     readonly game: Game
     readonly tile: Tile
-    turn: CombatRole = CombatRole.ATTACKER
+    turn: CombatRole
+    hasFired: boolean
     attacker: Player
     defender: Player
     // keeps track of units left to remove that were hit
     pendingHits: Hit[]= []
+    // track units that were marked as dead
+    markedDead: NumMap={}
+
     constructor(game: Game, tile: Tile, attacker: Player) {
         this.game = game
         this.tile = tile
+        this.turn = CombatRole.ATTACKER
         this.attacker = attacker
         this.defender = tile.owner!
+        this.hasFired = false
     }
 
     get isAttackerTurn() {
@@ -168,25 +174,37 @@ export class Combat {
             hits = Combat.getHitsFrom(defenders)
         }
         this.pendingHits = hits;
+        this.hasFired = true
     }
 
     nextTurn(){
         if (Object.keys(this.pendingHits).length > 0) {
             return
         } 
+        // remove marked dead
+        this.game.removeCasualties(this.curPlayer, this.tile, this.markedDead)
         this.turn = (this.isAttackerTurn ? CombatRole.DEFENDER : CombatRole.ATTACKER)
+        this.hasFired = false
+        this.markedDead = {}
+
     }
 
-    removeHitsFor(unitMap: NumMap) {
+    removeHits(unitMap: NumMap) {
         // TODO: support arbitrary unittype
+
+        // update markedDead
+        Object.entries(unitMap)
+        .filter(([type, num]) => num > 0)
+        .map(([type, num]) => {
+            this.markedDead[type] = (this.markedDead[type] || 0) + num
+        })
+
+        // update pending hits
         const sum = sumDict(unitMap)
         this.pendingHits[0].numHits -= sum
         if (this.pendingHits[0].numHits <= 0) {
             this.pendingHits.shift()
         }
-
-        const curPlayer = this.isAttackerTurn ? this.defender : this.attacker
-        this.game.removeCasualties(curPlayer, this.tile, unitMap)
     }
 
     getCombatants(): { attackers: Unit[], defenders: Unit[] } {
@@ -197,7 +215,8 @@ export class Combat {
     }
 
     retreat(){
-
+        // remove marked dead
+        this.game.removeCasualties(this.curPlayer, this.tile, this.markedDead)
     }
 
     static getHitsFrom(units: Unit[]): Hit[] {
