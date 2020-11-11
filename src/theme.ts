@@ -20,7 +20,7 @@ export default {
       boxShadow: '3px 5px #999',
       '&:hover': {
           boxShadow: '3px 5px #555',
-          border: '1px solid blue',
+          border: `1px solid blue`,
       },
       '&:active': {
           boxShadow: '2px 2px #999',

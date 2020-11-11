@@ -41,6 +41,10 @@ export class Unit {
         return [true, '']
     }
 
+    static canBeAttackedBy(attackerType: string, unitType: string) {
+        return !CantHit[attackerType].includes(unitType) && Attack[attackerType] >= Defense[unitType]
+    }
+
     fire() {
         // returns num of hits
         let numHits = 0
@@ -135,9 +139,17 @@ export class Combat {
         this.defender = tile.owner!
     }
 
+    get isAttackerTurn() {
+        return this.turn == CombatRole.ATTACKER
+    }
+
+    get curPlayer() {
+        return this.turn == CombatRole.ATTACKER ? this.attacker : this.defender
+    }
+
 
     recordHits() {
-        let { attackers, defenders } = this.game.getCombatants(t)
+        let { attackers, defenders } = this.getCombatants()
         if (attackers.length == 0) {return}
         if (defenders.length == 0) {return}
         if (Object.keys(this.pendingHits).length > 0) {
@@ -151,6 +163,7 @@ export class Combat {
             hits = Combat.getHitsFrom(defenders)
         }
         this.pendingHits = hits;
+        console.log('recordhits', this.pendingHits)
     }
 
     nextTurn(){
@@ -160,10 +173,25 @@ export class Combat {
         this.turn = (this.turn == CombatRole.ATTACKER ? CombatRole.DEFENDER : CombatRole.ATTACKER)
     }
 
-    removeCasualties(unitMap: NumMap) {
-        Object.keys(unitMap).forEach(key => this.pendingHits[key] -= unitMap[key])
-        let curPlayer = this.turn == CombatRole.ATTACKER ? this.attacker : this.defender
-        this.game.removeCasualties(curPlayer, this.tile, unitMap)
+    removeHitsFor(unitMap: NumMap, unitType: string) {
+        const sum = sumDict(unitMap)
+        if (unitType in this.pendingHits){
+            this.pendingHits[unitType] -= sum
+        }
+        if (this.pendingHits[unitType] <= 0) {
+            delete this.pendingHits[unitType]
+        }
+
+
+        console.log('removing', sum, 'from', unitType, this.pendingHits)
+        this.game.removeCasualties(this.curPlayer, this.tile, unitMap)
+    }
+
+    getCombatants(): { attackers: Unit[], defenders: Unit[] } {
+        const t= this.tile
+        let attackers = this.game.queryUnits(t, [this.attacker], [t.owner!])
+        let defenders = this.game.queryUnits(t, [t.owner!])
+        return { attackers, defenders }
     }
 
     static getHitsFrom(units: Unit[]) {
@@ -204,7 +232,7 @@ export class Game {
             tmp[u.type] = (tmp[u.type] ?? 0) + fn(u)
         })
         if (stripEmptyKeys) {
-            Object.keys(tmp).forEach(key => tmp[key] ?? delete tmp[key])
+            Object.keys(tmp).forEach(key => !tmp[key] && delete tmp[key])
         }
         return tmp
     }
@@ -265,12 +293,6 @@ export class Game {
 
     }
 
-    getCombatants(t: Tile): { attackers: Unit[], defenders: Unit[] } {
-        let attackers = this.queryUnits(t, this.players, [t.owner!])
-        let defenders = this.queryUnits(t, [t.owner!])
-        return { attackers, defenders }
-    }
-
     startCombat(t: Tile) {
         let attackers = this.queryUnits(t, this.players, [t.owner!])
         return new Combat(this, t, attackers[0].owner)
@@ -288,9 +310,11 @@ const dist = (a: Tile, b: Tile) => {
     return Math.abs(b.y - a.y) + Math.abs(b.x - a.x)
 }
 
+export const sumDict = (dict: NumMap) => Object.values(dict).reduce((acc,val) => acc + val, 0)
+
 // returns whether a roll is a success (input between 0 --> 1)
 const roll = (probSuccess: number) => Math.random() < probSuccess
-enum CombatRole {
+export enum CombatRole {
     ATTACKER, DEFENDER
 }
 

@@ -1,7 +1,8 @@
 import React, { useState, ReactChild } from 'react'
 import { Box, Flex, Button, Badge, ThemeProvider } from 'theme-ui'
 import CombatModal from './CombatModal'
-import { UnitType, Descript } from './game/data'
+import { UnitType, Descript, NumMap } from './game/data'
+import mockExports from './game/driver'
 import theme from './theme'
 
 interface AppProps {}
@@ -143,7 +144,7 @@ function App({}: AppProps) {
 
     return (
         <div className="App">
-            <CombatModal />
+            <CombatModal combat={mockExports.mockCombat} />
             {/* <Menu coords={focusedCell} /> */}
             <Box>
                 {gameState.map((row, i) => (
