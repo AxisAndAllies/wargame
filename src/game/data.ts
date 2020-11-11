@@ -17,7 +17,7 @@ export type StrMap = Record<string, string>
 
 export const Descript: StrMap = {
     INF: "infantry",
-    INFH: "heavy infantry (anti-tank, anti-aircraft)",
+    INFH: "heavy infantry",
     APC: "armored personel carrier",
     ARTI: "artillery",
     AA: "anti-air",

@@ -1,4 +1,4 @@
-import { UnitType, Attack, Defense, Descript, Move, CantHit, Cost, MAX_ATTACK } from './data'
+import { UnitType, Attack, Defense, Descript, Move, CantHit, Cost, MAX_ATTACK, NumMap } from './data'
 import { animalId, numericId, alphanumericId } from 'short-animal-id'
 export class Unit {
     pos: Tile
@@ -118,13 +118,59 @@ export class Player {
     }
 }
 
-const dist = (a: Tile, b: Tile) => {
-    // manhattan dist
-    return Math.abs(b.y - a.y) + Math.abs(b.x - a.x)
-}
 
-// returns whether a roll is a success (input between 0 --> 1)
-const roll = (probSuccess: number) => Math.random() < probSuccess
+export class Combat {
+
+    readonly game: Game
+    readonly tile: Tile
+    turn: CombatRole = CombatRole.ATTACKER
+    attacker: Player
+    defender: Player
+    // keeps track of units left to remove that were hit
+    pendingHits: NumMap= {}
+    constructor(game: Game, tile: Tile, attacker: Player) {
+        this.game = game
+        this.tile = tile
+        this.attacker = attacker
+        this.defender = tile.owner!
+    }
+
+
+    recordHits() {
+        let { attackers, defenders } = this.game.getCombatants(t)
+        if (attackers.length == 0) {return}
+        if (defenders.length == 0) {return}
+        if (Object.keys(this.pendingHits).length > 0) {
+            return
+        }
+        let hits;
+        if (this.turn == CombatRole.ATTACKER) {
+            hits = Combat.getHitsFrom(attackers)
+        }
+        else {
+            hits = Combat.getHitsFrom(defenders)
+        }
+        this.pendingHits = hits;
+    }
+
+    nextTurn(){
+        if (Object.keys(this.pendingHits).length > 0) {
+            return
+        } 
+        this.turn = (this.turn == CombatRole.ATTACKER ? CombatRole.DEFENDER : CombatRole.ATTACKER)
+    }
+
+    removeCasualties(unitMap: NumMap) {
+        Object.keys(unitMap).forEach(key => this.pendingHits[key] -= unitMap[key])
+        let curPlayer = this.turn == CombatRole.ATTACKER ? this.attacker : this.defender
+        this.game.removeCasualties(curPlayer, this.tile, unitMap)
+    }
+
+    static getHitsFrom(units: Unit[]) {
+        return Game.mapUnits(units, u => u.fire())
+    }
+
+}
 
 export class Game {
     readonly tiles: Tile[]
@@ -150,6 +196,17 @@ export class Game {
 
     queryUnits(tile: Tile, includedOwners: Player[], excludedOwners: Player[] = []) {
         return this.units.filter(u => u.pos == tile && includedOwners.includes(u.owner) && !excludedOwners.includes(u.owner))
+    }
+
+    static mapUnits(_units: Unit[], fn: (unit: Unit)=> number, stripEmptyKeys=true): NumMap {
+        let tmp: NumMap = {}
+        _units.forEach(u => {
+            tmp[u.type] = (tmp[u.type] ?? 0) + fn(u)
+        })
+        if (stripEmptyKeys) {
+            Object.keys(tmp).forEach(key => tmp[key] ?? delete tmp[key])
+        }
+        return tmp
     }
 
     moveUnit(u: Unit, dest: Tile) {
@@ -180,8 +237,14 @@ export class Game {
         // takes 3 turns
     }
 
-    retreat(player: Player) {
-
+    retreat(player: Player, tile: Tile) {
+        if (tile.owner == player) {
+            // defender retreat
+        }
+        else {
+            // attacker retreat
+            tile.owner = player
+        }
     }
 
     removeCasualties(player: Player, tile: Tile, unitMap: NumMap) {
@@ -208,42 +271,27 @@ export class Game {
         return { attackers, defenders }
     }
 
-    resolveCombatRound(t: Tile) {
-        let { attackers, defenders } = this.getCombatants(t)
-        let attackerHits: NumMap = {}
-        let defenderHits: NumMap = {}
-        Object.keys(UnitType).forEach(type => {
-            attackerHits[type] = 0
-            defenderHits[type] = 0
-        })
-        attackers.forEach(a => {
-            let numHits = a.fire()
-            attackerHits[a.type] += numHits
-            console.log(a.id, numHits, 'hits')
-        })
-        // defender can take casualties + retreat
-        defenders.forEach(a => {
-            let numHits = a.fire()
-            defenderHits[a.type] += numHits
-            console.log(a.id, numHits, 'hits')
-        })
-        // attacker can take casualties + retreat
-        console.log(attackerHits)
-        this.pickCasualties(attackers[0].owner, t, defenderHits)
-        console.log(defenderHits)
-        this.pickCasualties(defenders[0].owner, t, attackerHits)
+    startCombat(t: Tile) {
+        let attackers = this.queryUnits(t, this.players, [t.owner!])
+        return new Combat(this, t, attackers[0].owner)
     }
 
-    resolveCombat(t: Tile) {
-        while (attackers.length > 0 && defenders.length > 0) {
-            this.resolveCombatRound(t)
-            break
-        }
-    }
 
     nextTurn() {
         this.curTurn = (this.curTurn += 1) % this.players.length
     }
+}
+
+
+const dist = (a: Tile, b: Tile) => {
+    // manhattan dist
+    return Math.abs(b.y - a.y) + Math.abs(b.x - a.x)
+}
+
+// returns whether a roll is a success (input between 0 --> 1)
+const roll = (probSuccess: number) => Math.random() < probSuccess
+enum CombatRole {
+    ATTACKER, DEFENDER
 }
 
 /**

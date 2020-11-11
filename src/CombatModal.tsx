@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Box, Button, Flex, Input, Label, Text } from 'theme-ui'
-import type { Unit } from './game/board'
-import { NumMap, UnitType } from './game/data'
+import { Game, Unit } from './game/board'
+import { Descript, NumMap, UnitType } from './game/data'
 import mockExports from './game/driver'
 
 const UnitStack = ({
@@ -12,16 +12,7 @@ const UnitStack = ({
     onSubmit: (unitMap: NumMap) => void
 }) => {
     const [selected, setSelected] = useState<NumMap>({})
-    const maxMap = useMemo(() => {
-        let tmp: NumMap = {}
-        Object.keys(UnitType).forEach((type) => {
-            tmp[type] = units.filter((u) => u.type == type).length
-            if (tmp[type] == 0) {
-                delete tmp[type]
-            }
-        })
-        return tmp
-    }, [units])
+    const maxMap = useMemo(() => Game.mapUnits(units, (u) => 1), [units])
     const setTypeVal = (unitType: string, val: number) => {
         setSelected((prevState) => ({
             ...prevState,
@@ -34,24 +25,6 @@ const UnitStack = ({
         })
     }, [units])
 
-    const buttonStyle = {
-        backgroundColor: 'white',
-        color: 'black',
-        border: '1px solid black',
-        padding: '',
-        boxShadow: '3px 5px #999',
-        '&:hover': {
-            boxShadow: '3px 5px #555',
-            border: '1px solid blue',
-        },
-        '&:active': {
-            boxShadow: '2px 2px #999',
-            transform: `translate(1px, 3px)`,
-        },
-        '&:disabled': {
-            opacity: '30%',
-        },
-    }
     return (
         <>
             {Object.keys(maxMap).map((t) => (
@@ -66,7 +39,7 @@ const UnitStack = ({
                 >
                     <Box>
                         <Button
-                            sx={buttonStyle}
+                            variant="secondary"
                             mx={2}
                             onClick={() => {
                                 setTypeVal(t, selected[t] - 1)
@@ -76,7 +49,7 @@ const UnitStack = ({
                             -
                         </Button>
                         <Button
-                            sx={buttonStyle}
+                            variant="secondary"
                             mx={2}
                             onClick={() => {
                                 setTypeVal(t, selected[t] + 1)
@@ -87,7 +60,7 @@ const UnitStack = ({
                         </Button>
 
                         <Button
-                            sx={buttonStyle}
+                            variant="secondary"
                             mx={2}
                             onClick={() => {
                                 setTypeVal(t, maxMap[t])
@@ -96,16 +69,21 @@ const UnitStack = ({
                             All
                         </Button>
                     </Box>
-                    <Text ml={4}>
-                        {selected[t]}/{maxMap[t]}x {t}
+                    <Text ml={4} sx={{ fontSize: '18px' }}>
+                        <strong>
+                            {selected[t]}/{maxMap[t]}
+                        </strong>{' '}
+                        {Descript[t]}
                     </Text>
                 </Flex>
             ))}
-            <Box my={2} />
+            <Box my={4} />
             <Button
                 onClick={() => {
                     onSubmit(selected)
                 }}
+                mx={2}
+                variant="secondary"
             >
                 Submit
             </Button>
@@ -116,7 +94,9 @@ const UnitStack = ({
 const CombatModal = () => {
     // stub
     let _game = mockExports.mockGame
+    let combat = mockExports.mockCombat
     let { attackers, defenders } = _game.getCombatants(mockExports.mockTile)
+    const [hits, setHits] = useState<NumMap>({})
     return (
         <Flex
             sx={{
@@ -156,7 +136,17 @@ const CombatModal = () => {
                         />
                     </Box>
                 </Flex>
-                <Box>footer</Box>
+                <Button
+                    variant="secondary"
+                    onClick={() => {
+                        combat.recordHits()
+                        setHits(combat.pendingHits)
+                    }}
+                >
+                    Fire
+                </Button>
+                <Box my={4} />
+                <Box>{JSON.stringify(combat.pendingHits)}</Box>
             </Box>
         </Flex>
     )

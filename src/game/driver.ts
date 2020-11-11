@@ -25,12 +25,14 @@ const b = [new Unit(tile1, p2, UnitType.INFH),
     new Unit(tile1, p2, UnitType.HELI)]
 units = [...units, ...a, ...b]
 let game = new Game([tile1], units, [p1,p2])
+let combat = game.startCombat(tile1)
 // console.log(game.units)
 // game.units.forEach(u => console.log(u.id, u.cost, '-->', game.queryUnits(tile1, game.players, [u.owner]).filter(enemy => u.canAttack(enemy)[0]).map(enemy => `${enemy.id} (${u.accuracy(enemy)})`)))
 // game.resolveCombat(tile1)
 
 const mockExports = {
     mockTile: tile1,
-    mockGame: game
+    mockGame: game,
+    mockCombat: combat
 }
 export default mockExports
