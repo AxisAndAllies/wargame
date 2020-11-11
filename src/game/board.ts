@@ -139,7 +139,8 @@ export class Combat {
     // keeps track of units left to remove that were hit
     pendingHits: Hit[]= []
     // track units that were marked as dead
-    markedDead: NumMap={}
+    attackermarkedDead: NumMap={}
+    defendermarkedDead: NumMap={}
 
     constructor(game: Game, tile: Tile, attacker: Player) {
         this.game = game
@@ -156,6 +157,10 @@ export class Combat {
 
     get curPlayer() {
         return this.isAttackerTurn ? this.attacker : this.defender
+    }
+
+    get curMarkedDead() {
+        return this.isAttackerTurn ? this.defendermarkedDead : this.attackermarkedDead
     }
 
 
@@ -181,12 +186,11 @@ export class Combat {
         if (Object.keys(this.pendingHits).length > 0) {
             return
         } 
-        // remove marked dead
-        this.game.removeCasualties(this.curPlayer, this.tile, this.markedDead)
         this.turn = (this.isAttackerTurn ? CombatRole.DEFENDER : CombatRole.ATTACKER)
         this.hasFired = false
-        this.markedDead = {}
-
+        if(this.isAttackerTurn) {
+            this.removeAllMarkedDead()
+        }
     }
 
     removeHits(unitMap: NumMap) {
@@ -196,7 +200,7 @@ export class Combat {
         Object.entries(unitMap)
         .filter(([type, num]) => num > 0)
         .map(([type, num]) => {
-            this.markedDead[type] = (this.markedDead[type] || 0) + num
+            this.curMarkedDead[type] = (this.curMarkedDead[type] || 0) + num
         })
 
         // update pending hits
@@ -214,9 +218,16 @@ export class Combat {
         return { attackers, defenders }
     }
 
-    retreat(){
+    removeAllMarkedDead(){
+        console.log('Removing all marked dead units', this.attackermarkedDead, this.defendermarkedDead)
         // remove marked dead
-        this.game.removeCasualties(this.curPlayer, this.tile, this.markedDead)
+        this.game.removeCasualties(this.attacker, this.tile, this.attackermarkedDead)
+        this.game.removeCasualties(this.defender, this.tile, this.defendermarkedDead)
+    }
+
+
+    retreat(){
+        this.removeAllMarkedDead()
     }
 
     static getHitsFrom(units: Unit[]): Hit[] {
