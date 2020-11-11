@@ -144,7 +144,7 @@ export class Combat {
     }
 
     get curPlayer() {
-        return this.turn == CombatRole.ATTACKER ? this.attacker : this.defender
+        return this.isAttackerTurn ? this.attacker : this.defender
     }
 
 
@@ -156,21 +156,20 @@ export class Combat {
             return
         }
         let hits;
-        if (this.turn == CombatRole.ATTACKER) {
+        if (this.isAttackerTurn) {
             hits = Combat.getHitsFrom(attackers)
         }
         else {
             hits = Combat.getHitsFrom(defenders)
         }
         this.pendingHits = hits;
-        console.log('recordhits', this.pendingHits)
     }
 
     nextTurn(){
         if (Object.keys(this.pendingHits).length > 0) {
             return
         } 
-        this.turn = (this.turn == CombatRole.ATTACKER ? CombatRole.DEFENDER : CombatRole.ATTACKER)
+        this.turn = (this.isAttackerTurn ? CombatRole.DEFENDER : CombatRole.ATTACKER)
     }
 
     removeHitsFor(unitMap: NumMap, unitType: string) {
@@ -183,7 +182,8 @@ export class Combat {
         }
 
         console.log('removing', sum, 'from', unitType, this.pendingHits)
-        this.game.removeCasualties(this.curPlayer, this.tile, unitMap)
+        const curPlayer = this.isAttackerTurn ? this.defender : this.attacker
+        this.game.removeCasualties(curPlayer, this.tile, unitMap)
     }
 
     getCombatants(): { attackers: Unit[], defenders: Unit[] } {
@@ -289,7 +289,6 @@ export class Game {
             }
         })
         this._removeUnits(deadIds)
-
     }
 
     startCombat(t: Tile) {

@@ -141,13 +141,8 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
     useEffect(() => {
         let type = Object.keys(pendingHits)[0]
         let numHits = pendingHits[type]
-        console.log(
-            'got first hit',
-            { type, numHits },
-            sumDict(combat.pendingHits)
-        )
         setFirstHit({ type, numHits })
-    }, [sumDict(combat.pendingHits)])
+    }, [sumDict(pendingHits)])
     return (
         <Flex
             sx={{
@@ -194,6 +189,7 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                                 onSubmit={(map) => {
                                     combat.removeHitsFor(map, firstHit.type!)
                                     setPendingHits(combat.pendingHits)
+                                    // need the following line to work and idk why
                                     setCombatants(combat.getCombatants())
                                 }}
                             />
@@ -216,7 +212,6 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                     {firstHit.type} hit {firstHit.numHits} times
                 </Box>
                 <Box>{JSON.stringify(pendingHits)}</Box>
-                <Box>{JSON.stringify(combat.pendingHits)}</Box>
             </Box>
         </Flex>
     )
