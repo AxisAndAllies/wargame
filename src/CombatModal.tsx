@@ -128,14 +128,24 @@ const TextUnitStack = ({ units }: { units: Unit[] }) => {
     )
 }
 
-const CombatModal = ({ combat }: { combat: Combat }) => {
-    const [{ attackers, defenders }] = useState(combat.getCombatants())
+const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
+    const [combat] = useState(originalCombat)
+    const [{ attackers, defenders }, setCombatants] = useState(
+        combat.getCombatants()
+    )
     const [pendingHits, setPendingHits] = useState<NumMap>(combat.pendingHits)
-    const [firstHit, setFirstHit] = useState({})
+    const [firstHit, setFirstHit] = useState<{
+        type?: string
+        numHits?: number
+    }>({})
     useEffect(() => {
         let type = Object.keys(pendingHits)[0]
         let numHits = pendingHits[type]
-        console.log('got first hit', { type, numHits })
+        console.log(
+            'got first hit',
+            { type, numHits },
+            sumDict(combat.pendingHits)
+        )
         setFirstHit({ type, numHits })
     }, [sumDict(combat.pendingHits)])
     return (
@@ -163,10 +173,10 @@ const CombatModal = ({ combat }: { combat: Combat }) => {
                         {!combat.isAttackerTurn ? (
                             <UnitStack
                                 units={attackers}
-                                attackerType={firstHit.type}
-                                maxHits={firstHit.numHits}
+                                attackerType={firstHit.type!}
+                                maxHits={firstHit.numHits!}
                                 onSubmit={(map) => {
-                                    combat.removeHitsFor(map, firstHit.type)
+                                    combat.removeHitsFor(map, firstHit.type!)
                                     setPendingHits(combat.pendingHits)
                                 }}
                             />
@@ -179,16 +189,12 @@ const CombatModal = ({ combat }: { combat: Combat }) => {
                         {combat.isAttackerTurn ? (
                             <UnitStack
                                 units={defenders}
-                                attackerType={firstHit.type}
-                                maxHits={firstHit.numHits}
+                                attackerType={firstHit.type!}
+                                maxHits={firstHit.numHits!}
                                 onSubmit={(map) => {
-                                    combat.removeHitsFor(map, firstHit.type)
-                                    console.log(
-                                        'new',
-                                        combat.pendingHits,
-                                        firstHit
-                                    )
+                                    combat.removeHitsFor(map, firstHit.type!)
                                     setPendingHits(combat.pendingHits)
+                                    setCombatants(combat.getCombatants())
                                 }}
                             />
                         ) : (

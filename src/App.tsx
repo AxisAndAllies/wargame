@@ -144,7 +144,7 @@ function App({}: AppProps) {
 
     return (
         <div className="App">
-            <CombatModal combat={mockExports.mockCombat} />
+            <CombatModal originalCombat={mockExports.mockCombat} />
             {/* <Menu coords={focusedCell} /> */}
             <Box>
                 {gameState.map((row, i) => (

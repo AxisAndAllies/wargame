@@ -182,7 +182,6 @@ export class Combat {
             delete this.pendingHits[unitType]
         }
 
-
         console.log('removing', sum, 'from', unitType, this.pendingHits)
         this.game.removeCasualties(this.curPlayer, this.tile, unitMap)
     }
