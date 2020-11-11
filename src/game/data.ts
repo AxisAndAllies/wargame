@@ -1,7 +1,7 @@
 
 export type NumMap = Record<string, number>
 export type StrMap = Record<string, string>
-export type Hit = {type: string, numHits: number}
+export type Hit = {type: string, numHits: number, actionable?: number}
 
 export const UnitType: Record<string, string> = {
     INF: "INF",

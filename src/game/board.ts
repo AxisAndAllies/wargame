@@ -163,6 +163,18 @@ export class Combat {
         return this.isAttackerTurn ? this.defendermarkedDead : this.attackermarkedDead
     }
 
+    updateFirstPendingActionableHits() {
+        if(!this.pendingHits.length) {
+            return
+        }
+        // updates the first hit
+        const {attackers, defenders} = this.getCombatants()
+        const candidates = this.isAttackerTurn ? defenders : attackers
+        const {type: attackerType, numHits} = this.pendingHits[0]
+        const maxAttackable =  candidates.filter(u=>Unit.canBeAttackedBy(attackerType, u.type)).length
+        this.pendingHits[0].actionable = Math.min(numHits, maxAttackable)
+    }
+
 
     recordHits() {
         let { attackers, defenders } = this.getCombatants()
@@ -179,6 +191,7 @@ export class Combat {
             hits = Combat.getHitsFrom(defenders)
         }
         this.pendingHits = hits;
+        this.updateFirstPendingActionableHits()
         this.hasFired = true
     }
 
@@ -206,9 +219,11 @@ export class Combat {
         // update pending hits
         const sum = sumDict(unitMap)
         this.pendingHits[0].numHits -= sum
-        if (this.pendingHits[0].numHits <= 0) {
+        this.updateFirstPendingActionableHits()
+        if (this.pendingHits[0].actionable! <= 0) {
             this.pendingHits.shift()
         }
+        this.updateFirstPendingActionableHits()
     }
 
     getCombatants(): { attackers: Unit[], defenders: Unit[] } {
@@ -223,8 +238,9 @@ export class Combat {
         // remove marked dead
         this.game.removeCasualties(this.attacker, this.tile, this.attackermarkedDead)
         this.game.removeCasualties(this.defender, this.tile, this.defendermarkedDead)
+        this.attackermarkedDead = {}
+        this.defendermarkedDead = {}
     }
-
 
     retreat(){
         this.removeAllMarkedDead()
