@@ -5,11 +5,13 @@ import { Descript, Hit, NumMap, UnitType } from './game/data'
 
 const UnitStack = ({
     unitMap,
+    markedDead,
     attackerType,
     onSubmit,
     maxHits = 0,
 }: {
     unitMap: NumMap
+    markedDead: NumMap
     attackerType?: string
     maxHits?: number
     onSubmit: (unitMap: NumMap) => void
@@ -31,66 +33,78 @@ const UnitStack = ({
 
     return (
         <>
-            {Object.entries(unitMap).map(([type, count]) => (
-                <Flex
-                    sx={{
-                        alignItems: 'center',
-                        justifyContent: 'flex-start',
-                        userSelect: 'none',
-                    }}
-                    py={2}
-                    pr={4}
-                    key={type}
-                >
-                    <Box
+            {Object.entries(unitMap).map(([type, count]) => {
+                let maxForType =
+                    count - selected[type] - (markedDead[type] || 0)
+                return (
+                    <Flex
                         sx={{
-                            visibility: !isValid(type) ? 'hidden' : 'visible',
+                            alignItems: 'center',
+                            justifyContent: 'flex-start',
+                            userSelect: 'none',
                         }}
+                        py={2}
+                        pr={4}
+                        key={type}
                     >
-                        <Button
-                            variant="secondary"
-                            mx={2}
-                            onClick={() => {
-                                setTypeVal(type, selected[type] - 1)
-                            }}
-                            disabled={selected[type] == 0}
-                        >
-                            -
-                        </Button>
-                        <strong>{selected[type]}</strong>
-                        <Button
-                            variant="secondary"
-                            mx={2}
-                            onClick={() => {
-                                setTypeVal(type, selected[type] + 1)
-                            }}
-                            disabled={
-                                selected[type] == count ||
-                                sumDict(selected) + 1 > maxHits
-                            }
-                        >
-                            +
-                        </Button>
-                        <Button
-                            variant="secondary"
-                            mx={2}
-                            onClick={() => {
-                                setTypeVal(type, count)
-                            }}
+                        <Box
                             sx={{
-                                visibility: count < 2 ? 'hidden' : 'inherit',
+                                visibility: !isValid(type)
+                                    ? 'hidden'
+                                    : 'visible',
                             }}
-                            disabled={sumDict(selected) + count > maxHits}
                         >
-                            All
-                        </Button>
-                    </Box>
-                    <Text ml={4} sx={{ fontSize: '18px' }}>
-                        <strong>{count - selected[type]}</strong>{' '}
-                        {Descript[type]}
-                    </Text>
-                </Flex>
-            ))}
+                            <Button
+                                variant="secondary"
+                                mx={2}
+                                onClick={() => {
+                                    setTypeVal(type, selected[type] - 1)
+                                }}
+                                disabled={selected[type] == 0}
+                            >
+                                -
+                            </Button>
+                            <strong>{selected[type]}</strong>
+                            <Button
+                                variant="secondary"
+                                mx={2}
+                                onClick={() => {
+                                    setTypeVal(type, selected[type] + 1)
+                                }}
+                                disabled={
+                                    selected[type] >=
+                                        count - (markedDead[type] || 0) ||
+                                    sumDict(selected) + 1 > maxHits
+                                }
+                            >
+                                +
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                mx={2}
+                                onClick={() => {
+                                    setTypeVal(type, count)
+                                }}
+                                sx={{
+                                    visibility:
+                                        count < 2 ? 'hidden' : 'inherit',
+                                }}
+                                disabled={
+                                    sumDict(selected) +
+                                        count +
+                                        (markedDead[type] || 0) >
+                                    maxHits
+                                }
+                            >
+                                All
+                            </Button>
+                        </Box>
+                        <Text ml={4} sx={{ fontSize: '18px' }}>
+                            <strong>{maxForType}</strong> {Descript[type]}
+                        </Text>
+                    </Flex>
+                )
+            })}
             <Box my={4} />
             <Button
                 onClick={() => {
@@ -181,6 +195,7 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                         {!combat.isAttackerTurn ? (
                             <UnitStack
                                 unitMap={Game.mapUnits(attackers, (u) => 1)}
+                                markedDead={markedDead}
                                 attackerType={firstHit?.type}
                                 maxHits={firstHit?.numHits}
                                 onSubmit={submitHits}
@@ -196,6 +211,7 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                         {combat.isAttackerTurn ? (
                             <UnitStack
                                 unitMap={Game.mapUnits(defenders, (u) => 1)}
+                                markedDead={markedDead}
                                 attackerType={firstHit?.type}
                                 maxHits={firstHit?.numHits}
                                 onSubmit={submitHits}
