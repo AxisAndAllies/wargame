@@ -1,7 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Box, Button, Flex, Text } from 'theme-ui'
+import { Box, Button, Flex, Badge, Text } from 'theme-ui'
 import { Combat, Game, sumDict, Unit } from './game/board'
-import { Descript, Hit, NumMap, UnitType } from './game/data'
+import { Attack, Defense, Descript, Hit, NumMap, UnitType } from './game/data'
+
+const UnitText = ({ type, count }: { type: string; count: number }) => (
+    <Text ml={4} sx={{ fontSize: '18px' }}>
+        <strong>{count}</strong> {Descript[type]}: <br></br>
+        <Badge mr={2} variant="outline">
+            {Attack[type]} att ({Unit.getAccuracy(type) * 100}%)
+        </Badge>
+        <Badge mr={2} variant="outline">
+            {Defense[type]} def
+        </Badge>
+    </Text>
+)
 
 const UnitStack = ({
     unitMap,
@@ -101,9 +113,7 @@ const UnitStack = ({
                                     All
                                 </Button>
                             </Box>
-                            <Text ml={4} sx={{ fontSize: '18px' }}>
-                                <strong>{maxForType}</strong> {Descript[type]}
-                            </Text>
+                            <UnitText type={type} count={maxForType} />
                         </Flex>
                     )
                 })}
@@ -129,14 +139,10 @@ const UnitStack = ({
 const TextUnitStack = ({ unitMap }: { unitMap: NumMap }) => {
     return (
         <Box py={2}>
-            {Object.keys(unitMap).map((t) => (
-                <Text
-                    sx={{ fontSize: '18px', userSelect: 'none' }}
-                    py={2}
-                    key={t}
-                >
-                    <strong>{unitMap[t]}</strong> {Descript[t]}
-                </Text>
+            {Object.entries(unitMap).map(([type, count]) => (
+                <Box py={2} key={`${type}${count}`}>
+                    <UnitText type={type} count={count} />
+                </Box>
             ))}
         </Box>
     )

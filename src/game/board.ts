@@ -26,6 +26,9 @@ export class Unit {
     get accuracy() {
         return this.attack / MAX_ATTACK
     }
+    static getAccuracy(type: string) {
+        return Attack[type]/MAX_ATTACK
+    }
 
     // accuracy(target: Unit){
     //     const accLookup = Accuracy[this.type]

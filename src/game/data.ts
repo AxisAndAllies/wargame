@@ -147,5 +147,6 @@ eg. 1 INFH hit, 1 AA hit, you have 1 tankl, 1 fig
     - ideally would be both hit (infh --> tankl, aa --> fig)
     - but in actuality, can do (aa --> tanlk), in which case fig lives since inf can't attack fig
 
+- also possible to end up in scenario where neither can hit each other (eg. bomber, heli)
 
 */
