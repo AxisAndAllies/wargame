@@ -7,9 +7,15 @@ export default {
     monospace: 'Menlo, monospace',
   },
   colors: {
+    // mostly from tailwind colors: https://tailwindcss.com/docs/customizing-colors
     text: '#000',
     background: '#fff',
-    primary: '#33e',
+    primary: '#2C7A7B',
+    red: '#C53030',
+    blue: '#2B6CB0',
+    purple: '#6B46C1',
+    green: '#2F855A',
+    gray: '#718096'
   },
   buttons: {
     secondary: {
