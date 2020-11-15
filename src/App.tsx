@@ -6,6 +6,7 @@ import { UnitType, Descript, NumMap } from './game/data'
 import mockExports from './game/driver'
 import theme from './theme'
 import data from './game/110m-map.json'
+import type { PathOptions } from 'leaflet'
 
 interface AppProps {}
 
@@ -144,7 +145,17 @@ function App({}: AppProps) {
 
     const [focusedCell, setFocusedCell] = useState<[number, number]>([0, 0])
     const pos = [39, 90]
-    console.log(data)
+    const mapColors = { base: '#5c8b70', highlight: '#a7cab6', dark: '#485f5b' }
+    // console.log(data)
+    const style: PathOptions = {
+        stroke: true,
+        fill: true,
+        fillColor: mapColors.base,
+        fillOpacity: 0.5,
+        color: '#444',
+        weight: 1,
+    }
+    const [focusedLayer, setFocusedLayer] = useState(null)
     return (
         <div className="App" style={{ height: '100vh' }}>
             {/* <CombatModal originalCombat={mockExports.mockCombat} /> */}
@@ -153,7 +164,7 @@ function App({}: AppProps) {
             <MapContainer
                 center={{ lat: pos[0], lng: pos[1] }}
                 zoom={4}
-                scrollWheelZoom={false}
+                scrollWheelZoom={true}
                 style={{ height: '90%' }}
             >
                 {/* <TileLayer
@@ -163,11 +174,41 @@ function App({}: AppProps) {
                 <GeoJSON
                     attribution="https://geojson-maps.ash.ms/"
                     data={data}
-                    style={{
-                        stroke: false,
-                        fill: true,
-                        fillColor: '#fff',
-                        fillOpacity: 1,
+                    style={style}
+                    eventHandlers={{
+                        click: (e) => {
+                            focusedLayer?.setStyle({
+                                // color: '#444',
+                                // weight: 1,
+                                fillColor: mapColors.base,
+                            })
+                            e.layer.setStyle({
+                                // color: '#999',
+                                // weight: 3,
+                                fillColor: mapColors.highlight,
+                            })
+                            setFocusedLayer(e.layer)
+                        },
+                        mouseover: (e) => {
+                            if (focusedLayer == e.layer) {
+                                return
+                            }
+                            e.layer.setStyle({
+                                // color: '#999',
+                                // weight: 3,
+                                fillColor: mapColors.dark,
+                            })
+                        },
+                        mouseout: (e) => {
+                            if (focusedLayer == e.layer) {
+                                return
+                            }
+                            e.layer.setStyle({
+                                // color: '#999',
+                                // weight: 3,
+                                fillColor: mapColors.base,
+                            })
+                        },
                     }}
                 />
                 {/* <Marker position={position}>
