@@ -29,6 +29,12 @@ const Menu: React.FC<{ layer: Layer }> = ({ layer }) => {
                 <Text sx={{ fontSize: '28px' }}>
                     {layer.feature.properties.name}
                 </Text>
+                <Text sx={{ fontSize: '18px' }}>
+                    {layer?.feature.geometry.type}
+                </Text>
+                <Text sx={{ fontSize: '18px' }}>
+                    {layer?.feature.geometry.coordinates.length}
+                </Text>
                 <Box sx={{ wordWrap: 'break-word' }}>
                     {/* {layer.feature.properties.name} */}
                     {/* {JSON.stringify(layer.feature.properties, null, 2)} */}

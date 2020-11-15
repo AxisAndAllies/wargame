@@ -11,11 +11,16 @@ import {
     SVGOverlay,
     Circle,
     LayerGroup,
+    Rectangle,
 } from 'react-leaflet'
 import data from './game/50m-map.json'
 import type { Feature } from 'geojson'
 import { Text } from 'theme-ui'
 import Menu from './Menu'
+// import * as turf from '@turf/turf'
+
+// process data
+// data.features.map((f) => (f.geometry.type = 'Polygon'))
 
 export const Map = () => {
     const pos = [39, 90]
@@ -87,58 +92,80 @@ export const Map = () => {
                     ref={mapRef}
                 />
 
-                {focusedLayer && (
-                    <>
-                        <LayerGroup>
-                            <Circle
-                                center={focusedLayer?.getBounds().getCenter()}
-                                pathOptions={{ color: 'purple' }}
-                                radius={50_000}
-                            />
-                            <Circle
+                {focusedLayer && <MapCenter layer={focusedLayer} />}
+            </MapContainer>
+            {/* <Text>
+                {JSON.stringify(mapRef.current?.leafletElement?.getBounds())}
+            </Text> */}
+        </>
+    )
+}
+
+const MapCenter = ({ layer }: { layer: Layer }) => {
+    return (
+        <>
+            <LayerGroup>
+                {/* <Circle
                                 center={focusedLayer?.getCenter()}
                                 pathOptions={{ color: '#ffa7ff' }}
                                 radius={50_000}
                             />
-                            {/* <Circle
-                                center={getCentroid2(
-                                    getLargestChunk(
-                                        focusedLayer?.feature.geometry
-                                            .coordinates
-                                    )
-                                )}
-                                pathOptions={{ color: '#ff5983' }}
-                                radius={50_000}
+                            <Circle
+                                center={turf
+                                    .pointOnFeature(focusedLayer?.feature)
+                                    .geometry.coordinates.reverse()}
+                                pathOptions={{ color: '#273dff' }}
+                                radius={100_000}
                             /> */}
-                            {focusedLayer?.feature.geometry.type ==
-                                'MultiPolygon' && (
-                                <>
-                                    {focusedLayer?.feature.geometry.coordinates.map(
+                {/* <Rectangle bounds={focusedLayer?.getBounds()} /> */}
+
+                {layer.feature.geometry.type == 'MultiPolygon' ? (
+                    <>
+                        <Circle
+                            center={getAvg(
+                                getLargestChunk(
+                                    layer.feature.geometry.coordinates
+                                )
+                            ).reverse()}
+                            pathOptions={{ color: '#c3284f' }}
+                            radius={50_000}
+                        />
+                        {/* {focusedLayer?.feature.geometry.coordinates.map(
                                         (coord) => (
                                             <Circle
-                                                center={getAvg(coord[0])}
+                                                center={getAvg(
+                                                    coord[0]
+                                                ).reverse()}
                                                 pathOptions={{
                                                     color: '#fffc59',
                                                 }}
                                                 radius={50_000}
                                             />
                                         )
-                                    )}
-                                    {focusedLayer?.feature.geometry.coordinates.map(
+                                    )} */}
+                        {/* {focusedLayer?.feature.geometry.coordinates.map(
                                         (coord) => (
                                             <Circle
-                                                center={getCentroid2(coord[0])}
+                                                center={getCentroid2(
+                                                    coord[0]
+                                                ).reverse()}
                                                 pathOptions={{
                                                     color: '#ffbf59',
                                                 }}
                                                 radius={50_000}
                                             />
                                         )
-                                    )}
-                                </>
-                            )}
-                        </LayerGroup>
-                        <SVGOverlay
+                                    )} */}
+                    </>
+                ) : (
+                    <Circle
+                        center={layer.getBounds().getCenter()}
+                        pathOptions={{ color: 'purple' }}
+                        radius={50_000}
+                    />
+                )}
+            </LayerGroup>
+            {/* <SVGOverlay
                             attributes={{ stroke: 'red' }}
                             bounds={curBounds}
                         >
@@ -153,18 +180,12 @@ export const Map = () => {
                             <text x="50%" y="50%" stroke="white">
                                 text
                             </text>
-                        </SVGOverlay>
-                    </>
-                )}
-            </MapContainer>
-            {/* <Text>
-                {JSON.stringify(mapRef.current?.leafletElement?.getBounds())}
-            </Text> */}
+                        </SVGOverlay> */}
         </>
     )
 }
 
-const mapColors = { base: '#5c8b70', highlight: '#a7cab6', dark: '#485f5b' }
+const mapColors = { base: '#5c8b70', highlight: '#b1e9c9', dark: '#485f5b' }
 
 function getColor(d: number) {
     // return d > 1000
@@ -220,10 +241,9 @@ function computedStyle(feature: Feature) {
     }
 }
 
-const getLargestChunk = (coords: [number][][]) => {
-    coords = coords.sort((a, b) => b[0].length - a[0].length)
-    let maxCoords = coords[0]
-    if (maxCoords.length == 1) maxCoords = maxCoords[0]
+const getLargestChunk = (coords: [number][]) => {
+    let maxCoords = coords.sort((a, b) => b[0].length - a[0].length)[0]
+    maxCoords = maxCoords[0]
     // coords.map((c) => {
     //     console.log(c.length, maxCoords.length)
     //     if (c.length > maxCoords.length) maxCoords = c
