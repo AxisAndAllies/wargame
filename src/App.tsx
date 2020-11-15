@@ -1,9 +1,11 @@
+import { TileLayer, Marker, Popup, MapContainer, GeoJSON } from 'react-leaflet'
 import React, { useState, ReactChild } from 'react'
 import { Box, Flex, Button, Badge, ThemeProvider } from 'theme-ui'
 import CombatModal from './CombatModal'
 import { UnitType, Descript, NumMap } from './game/data'
 import mockExports from './game/driver'
 import theme from './theme'
+import data from './game/110m-map.json'
 
 interface AppProps {}
 
@@ -141,31 +143,40 @@ function App({}: AppProps) {
     // }, [count, setCount])
 
     const [focusedCell, setFocusedCell] = useState<[number, number]>([0, 0])
-
+    const pos = [39, 90]
+    console.log(data)
     return (
-        <div className="App">
-            <CombatModal originalCombat={mockExports.mockCombat} />
+        <div className="App" style={{ height: '100vh' }}>
+            {/* <CombatModal originalCombat={mockExports.mockCombat} /> */}
             {/* <Menu coords={focusedCell} /> */}
-            <Box>
-                {gameState.map((row, i) => (
-                    <Flex key={`row${i}`}>
-                        {row.map((cell, j) => (
-                            <Cell
-                                key={`cell${j}`}
-                                isFocused={
-                                    focusedCell[0] == i && focusedCell[1] == j
-                                }
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    setFocusedCell([i, j])
-                                }}
-                            >
-                                <UnitGroup units={gameState[i][j].units} />
-                            </Cell>
-                        ))}
-                    </Flex>
-                ))}
-            </Box>
+            <div>hello</div>
+            <MapContainer
+                center={{ lat: pos[0], lng: pos[1] }}
+                zoom={4}
+                scrollWheelZoom={false}
+                style={{ height: '90%' }}
+            >
+                {/* <TileLayer
+                    attribution="https://geojson-maps.ash.ms/"
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                /> */}
+                <GeoJSON
+                    attribution="https://geojson-maps.ash.ms/"
+                    data={data}
+                    style={{
+                        stroke: false,
+                        fill: true,
+                        fillColor: '#fff',
+                        fillOpacity: 1,
+                    }}
+                />
+                {/* <Marker position={position}>
+                    <Popup>
+                        A pretty CSS3 popup. <br /> Easily customizable.
+                    </Popup>
+                </Marker> */}
+                <div style={{ fontSize: '28px' }}>foo</div>
+            </MapContainer>
         </div>
     )
 }
