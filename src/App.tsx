@@ -1,10 +1,10 @@
 import React, { useState, ReactChild } from 'react'
 import { Box, Flex, Button, Badge, ThemeProvider } from 'theme-ui'
-import CombatModal from './CombatModal'
+import CombatModal from './components/CombatModal'
 import { UnitType, Descript, NumMap } from './game/data'
 import mockExports from './game/driver'
 import theme from './theme'
-import { Map } from './Map'
+import { Map } from './components/Map'
 
 interface AppProps {}
 
