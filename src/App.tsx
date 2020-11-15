@@ -1,12 +1,10 @@
-import { TileLayer, Marker, Popup, MapContainer, GeoJSON } from 'react-leaflet'
 import React, { useState, ReactChild } from 'react'
 import { Box, Flex, Button, Badge, ThemeProvider } from 'theme-ui'
 import CombatModal from './CombatModal'
 import { UnitType, Descript, NumMap } from './game/data'
 import mockExports from './game/driver'
 import theme from './theme'
-import data from './game/110m-map.json'
-import type { PathOptions } from 'leaflet'
+import { Map } from './Map'
 
 interface AppProps {}
 
@@ -143,81 +141,12 @@ function App({}: AppProps) {
     //     return () => clearTimeout(timer)
     // }, [count, setCount])
 
-    const [focusedCell, setFocusedCell] = useState<[number, number]>([0, 0])
-    const pos = [39, 90]
-    const mapColors = { base: '#5c8b70', highlight: '#a7cab6', dark: '#485f5b' }
-    // console.log(data)
-    const style: PathOptions = {
-        stroke: true,
-        fill: true,
-        fillColor: mapColors.base,
-        fillOpacity: 0.5,
-        color: '#444',
-        weight: 1,
-    }
-    const [focusedLayer, setFocusedLayer] = useState(null)
     return (
         <div className="App" style={{ height: '100vh' }}>
             {/* <CombatModal originalCombat={mockExports.mockCombat} /> */}
             {/* <Menu coords={focusedCell} /> */}
+            <Map />
             <div>hello</div>
-            <MapContainer
-                center={{ lat: pos[0], lng: pos[1] }}
-                zoom={4}
-                scrollWheelZoom={true}
-                style={{ height: '90%' }}
-            >
-                {/* <TileLayer
-                    attribution="https://geojson-maps.ash.ms/"
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                /> */}
-                <GeoJSON
-                    attribution="https://geojson-maps.ash.ms/"
-                    data={data}
-                    style={style}
-                    eventHandlers={{
-                        click: (e) => {
-                            focusedLayer?.setStyle({
-                                // color: '#444',
-                                // weight: 1,
-                                fillColor: mapColors.base,
-                            })
-                            e.layer.setStyle({
-                                // color: '#999',
-                                // weight: 3,
-                                fillColor: mapColors.highlight,
-                            })
-                            setFocusedLayer(e.layer)
-                        },
-                        mouseover: (e) => {
-                            if (focusedLayer == e.layer) {
-                                return
-                            }
-                            e.layer.setStyle({
-                                // color: '#999',
-                                // weight: 3,
-                                fillColor: mapColors.dark,
-                            })
-                        },
-                        mouseout: (e) => {
-                            if (focusedLayer == e.layer) {
-                                return
-                            }
-                            e.layer.setStyle({
-                                // color: '#999',
-                                // weight: 3,
-                                fillColor: mapColors.base,
-                            })
-                        },
-                    }}
-                />
-                {/* <Marker position={position}>
-                    <Popup>
-                        A pretty CSS3 popup. <br /> Easily customizable.
-                    </Popup>
-                </Marker> */}
-                <div style={{ fontSize: '28px' }}>foo</div>
-            </MapContainer>
         </div>
     )
 }
