@@ -66,48 +66,6 @@ const Cell = ({
     )
 }
 
-const Menu: React.FC<{ coords: Coords }> = ({ coords }) => {
-    return (
-        <Box
-            backgroundColor="#f6f6f6"
-            my="5vh"
-            mr={0}
-            sx={{
-                width: '400px',
-                height: '90vh',
-                position: 'absolute',
-                right: 0,
-                border: '1px solid black',
-            }}
-            p={4}
-        >
-            {/* <Flex>
-                {gameState[coords[0]][coords[1]].units.map((u) => (
-                    <Box backgroundColor="tomato">{Descript[u]}</Box>
-                ))}
-            </Flex> */}
-
-            <Flex py={4} sx={{ flexDirection: 'column' }}>
-                {Object.keys(UnitType).map((name) => (
-                    <Box>
-                        <Button
-                            onClick={(e) => addUnitToCell(name, coords)}
-                            my={2}
-                            backgroundColor="white"
-                            color="black"
-                            sx={{
-                                border: '1px solid black',
-                            }}
-                        >
-                            Add {Descript[name]}
-                        </Button>
-                    </Box>
-                ))}
-            </Flex>
-        </Box>
-    )
-}
-
 const UnitGroup = ({ units }: { units: string[] }) => {
     const groups: NumMap = {}
     Object.keys(UnitType).forEach((k) => (groups[k] = 0))
@@ -144,7 +102,6 @@ function App({}: AppProps) {
     return (
         <div className="App" style={{ height: '100vh' }}>
             {/* <CombatModal originalCombat={mockExports.mockCombat} /> */}
-            {/* <Menu coords={focusedCell} /> */}
             <Map />
             <div>hello</div>
         </div>
