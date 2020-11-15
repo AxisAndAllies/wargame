@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Box, Button, Flex, Badge, Text } from 'theme-ui'
-import { Combat, Game, sumDict, Unit } from './game/board'
+import { Combat, Game, sumDict, Unit } from './game/game'
 import { Attack, Defense, Descript, Hit, NumMap, UnitType } from './game/data'
 
 const UnitText = ({ type, count }: { type: string; count: number }) => (
@@ -181,6 +181,7 @@ const CombatModal = ({ originalCombat }: { originalCombat: Combat }) => {
                 width: '100vw',
                 height: '100vh',
                 position: 'absolute',
+                zIndex: 9999,
             }}
         >
             <Box

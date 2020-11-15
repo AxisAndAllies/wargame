@@ -1,9 +1,17 @@
 import type { Layer } from 'leaflet'
 import React from 'react'
-import { Box, Flex, Text } from 'theme-ui'
+import { Box, Button, Flex, Text } from 'theme-ui'
+import { UnitType, Descript } from './game/data'
+import type { Tile, Unit } from './game/game'
 
-const Menu: React.FC<{ layer: Layer }> = ({ layer }) => {
+const Menu: React.FC<{
+    layer: Layer
+    tile: Tile
+    units: Unit[]
+    buyUnit: (type: string, tileId: string) => void
+}> = ({ layer, buyUnit, tile, units }) => {
     console.log(layer)
+    const { properties, geometry } = layer.feature
     return (
         <Box
             backgroundColor="#f6f6f6"
@@ -26,34 +34,24 @@ const Menu: React.FC<{ layer: Layer }> = ({ layer }) => {
             </Flex> */}
 
             <Flex py={4} sx={{ flexDirection: 'column' }}>
-                <Text sx={{ fontSize: '28px' }}>
-                    {layer.feature.properties.name}
-                </Text>
-                <Text sx={{ fontSize: '18px' }}>
-                    {layer?.feature.geometry.type}
-                </Text>
-                <Text sx={{ fontSize: '18px' }}>
-                    {layer?.feature.geometry.coordinates.length}
-                </Text>
+                <Text sx={{ fontSize: '28px' }}>{properties.name}</Text>
+                <Text sx={{ fontSize: '18px' }}>${tile.value}</Text>
                 <Box sx={{ wordWrap: 'break-word' }}>
-                    {/* {layer.feature.properties.name} */}
-                    {/* {JSON.stringify(layer.feature.properties, null, 2)} */}
+                    {units.map((u) => (
+                        <Box>{(u.owner, u.type)}</Box>
+                    ))}
                 </Box>
-                {/* {Object.keys(UnitType).map((name) => (
+                {Object.keys(UnitType).map((type) => (
                     <Box>
                         <Button
-                            onClick={(e) => addUnitToCell(name, coords)}
+                            onClick={(e) => buyUnit(properties.name, type)}
                             my={2}
-                            backgroundColor="white"
-                            color="black"
-                            sx={{
-                                border: '1px solid black',
-                            }}
+                            variant="secondary"
                         >
-                            Add {Descript[name]}
+                            Add {Descript[type]}
                         </Button>
                     </Box>
-                ))} */}
+                ))}
             </Flex>
         </Box>
     )

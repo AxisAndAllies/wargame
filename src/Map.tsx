@@ -17,23 +17,34 @@ import data from './game/50m-map.json'
 import type { Feature } from 'geojson'
 import { Text } from 'theme-ui'
 import Menu from './Menu'
+import mockExports from './game/driver'
+import { Tile } from './game/game'
 // import * as turf from '@turf/turf'
+const { mockGame } = mockExports
 
 // process data
-// data.features.map((f) => (f.geometry.type = 'Polygon'))
+data.features.forEach(({ properties, geometry }) => {
+    // add tiles
+    const value =
+        geometry.type == 'MultiPolygon'
+            ? Math.min(16, geometry.coordinates.length)
+            : 1
+    const newTile = new Tile(0, 0, '', value, properties.name)
+    mockGame.addTile(newTile)
+})
 
 export const Map = () => {
     const pos = [39, 90]
     const mapRef = useRef(null)
     const [focusedLayer, setFocusedLayer] = useState<Layer | null>(null)
 
-    const curBounds: LatLngTuple = useMemo(() => {
-        // console.log('ee', focusedLayer?.getBounds())
-        return [
-            [51.49, -0.01],
-            [51.51, -0.07],
-        ]
-    }, [focusedLayer])
+    // const curBounds: LatLngTuple = useMemo(() => {
+    //     // console.log('ee', focusedLayer?.getBounds())
+    //     return [
+    //         [51.49, -0.01],
+    //         [51.51, -0.07],
+    //     ]
+    // }, [focusedLayer])
 
     const resetLayerStyle = (layer: Layer) => {
         layer?.setStyle({
@@ -73,17 +84,24 @@ export const Map = () => {
 
     return (
         <>
-            {focusedLayer && <Menu layer={focusedLayer} />}
+            {focusedLayer && (
+                <Menu
+                    layer={focusedLayer}
+                    tile={mockGame.getTile(
+                        focusedLayer.feature.properties.name
+                    )}
+                    units={mockGame.queryUnits(
+                        mockGame.getTile(focusedLayer.feature.properties.name)
+                    )}
+                    buyUnit={mockGame.buyUnit.bind(mockGame)}
+                />
+            )}
             <MapContainer
                 center={{ lat: pos[0], lng: pos[1] }}
                 zoom={4}
                 scrollWheelZoom={true}
                 style={{ height: '90%', zIndex: 1 }}
             >
-                {/* <TileLayer
-                    attribution="https://geojson-maps.ash.ms/"
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                /> */}
                 <GeoJSON
                     attribution="https://geojson-maps.ash.ms/"
                     data={data}
@@ -94,9 +112,6 @@ export const Map = () => {
 
                 {focusedLayer && <MapCenter layer={focusedLayer} />}
             </MapContainer>
-            {/* <Text>
-                {JSON.stringify(mapRef.current?.leafletElement?.getBounds())}
-            </Text> */}
         </>
     )
 }
