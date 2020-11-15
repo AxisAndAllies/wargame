@@ -1,7 +1,7 @@
 import type { Layer } from 'leaflet'
 import React from 'react'
 import { Box, Button, Flex, Text } from 'theme-ui'
-import { UnitType, Descript } from './game/data'
+import { UnitType, Descript, Cost } from './game/data'
 import type { Tile, Unit } from './game/game'
 
 const Menu: React.FC<{
@@ -48,7 +48,7 @@ const Menu: React.FC<{
                             my={2}
                             variant="secondary"
                         >
-                            Add {Descript[type]}
+                            Buy {Descript[type]} (${Cost[type]})
                         </Button>
                     </Box>
                 ))}

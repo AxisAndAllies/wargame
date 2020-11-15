@@ -50,7 +50,10 @@ export const Map = () => {
         layer?.setStyle({
             // color: '#444',
             // weight: 1,
-            fillColor: mapColors.base,
+            fillColor: getPlayerColor(layer) || mapColors.base,
+            fillOpacity: 0.5,
+            color: '#444',
+            weight: 1,
         })
     }
 
@@ -58,10 +61,13 @@ export const Map = () => {
         click: (e) => {
             resetLayerStyle(focusedLayer!)
             e.propagatedFrom.setStyle({
-                // color: '#999',
-                // weight: 3,
-                fillColor: mapColors.highlight,
+                fillColor:
+                    getPlayerColor(e.propagatedFrom) || mapColors.highlight,
+                fillOpacity: 0.3,
+                color: 'white',
+                weight: 2,
             })
+            e.propagatedFrom.bringToFront()
             setFocusedLayer(e.propagatedFrom)
         },
         mouseover: (e) => {
@@ -70,15 +76,19 @@ export const Map = () => {
             }
             e.propagatedFrom.setStyle({
                 // color: '#999',
-                // weight: 3,
-                fillColor: mapColors.dark,
+                fillColor: getPlayerColor(e.propagatedFrom) || mapColors.dark,
+                fillOpacity: 0.7,
+                color: 'white',
+                weight: 2,
             })
+            e.propagatedFrom.bringToFront()
         },
         mouseout: (e) => {
             if (focusedLayer == e.layer) {
                 return
             }
             resetLayerStyle(e.propagatedFrom)
+            e.propagatedFrom.bringToBack()
         },
     }
 
@@ -105,18 +115,20 @@ export const Map = () => {
                 <GeoJSON
                     attribution="https://geojson-maps.ash.ms/"
                     data={data}
-                    style={style || computedStyle}
+                    style={style}
                     eventHandlers={eventHandlers}
                     ref={mapRef}
                 />
 
-                {focusedLayer && <MapCenter layer={focusedLayer} />}
+                {focusedLayer && <Center layer={focusedLayer} />}
             </MapContainer>
         </>
     )
 }
 
-const MapCenter = ({ layer }: { layer: Layer }) => {
+const Center = ({ layer }: { layer: Layer }) => {
+    const { geometry, properties } = layer.feature
+    const getRadius = () => getScale(layer) * 20_000
     return (
         <>
             <LayerGroup>
@@ -134,16 +146,14 @@ const MapCenter = ({ layer }: { layer: Layer }) => {
                             /> */}
                 {/* <Rectangle bounds={focusedLayer?.getBounds()} /> */}
 
-                {layer.feature.geometry.type == 'MultiPolygon' ? (
+                {geometry.type == 'MultiPolygon' ? (
                     <>
                         <Circle
                             center={getAvg(
-                                getLargestChunk(
-                                    layer.feature.geometry.coordinates
-                                )
+                                getLargestChunk(geometry.coordinates)
                             ).reverse()}
                             pathOptions={{ color: '#c3284f' }}
-                            radius={50_000}
+                            radius={getRadius()}
                         />
                         {/* {focusedLayer?.feature.geometry.coordinates.map(
                                         (coord) => (
@@ -176,7 +186,7 @@ const MapCenter = ({ layer }: { layer: Layer }) => {
                     <Circle
                         center={layer.getBounds().getCenter()}
                         pathOptions={{ color: 'purple' }}
-                        radius={50_000}
+                        radius={getRadius()}
                     />
                 )}
             </LayerGroup>
@@ -198,6 +208,25 @@ const MapCenter = ({ layer }: { layer: Layer }) => {
                         </SVGOverlay> */}
         </>
     )
+}
+
+const getScale = (layer: Layer) => {
+    const { geometry, properties } = layer.feature
+    const tile = mockGame.getTile(properties.name)
+    const units = mockGame.queryUnits(tile)
+    const sumValue = units.reduce((acc, val) => acc + val.cost, 0)
+    // let res = Math.sqrt(mockGame.queryUnits(tile).length) * 3 + 1
+    let res = sumValue + 2
+    return res
+}
+
+const getPlayerColor = (layer: Layer) => {
+    const { geometry, properties } = layer.feature
+    const tile = mockGame.getTile(properties.name)
+    const units = mockGame.queryUnits(tile)
+    if (!units.length) return null
+    console.log(units[0].owner.color)
+    return units[0].owner.color
 }
 
 const mapColors = { base: '#5c8b70', highlight: '#b1e9c9', dark: '#485f5b' }
@@ -247,7 +276,8 @@ const style: PathOptions = {
 function computedStyle(feature: Feature) {
     // console.log(feature)
     return {
-        fillColor: getColor(feature.properties?.gdp_md_est),
+        // fillColor: getColor(feature.properties?.gdp_md_est),
+        fillColor: getPlayerColor(name),
         weight: 2,
         opacity: 1,
         color: 'white',

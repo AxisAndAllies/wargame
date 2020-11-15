@@ -5,8 +5,9 @@ const attack = (attacker: string, defenders: string[]) => {
     // can't let defender pick casualties b/c they have different defense values, so attacker must choose what to attack
 }
 
-const p1 = new Player('bob', 20)
-const p2 = new Player('alice', 20)
+// from https://htmlcolorcodes.com/color-chart/flat-design-color-chart/
+const p1 = new Player('bob', 200, '#CD5C5C')
+const p2 = new Player('alice', 200, '#af7ac5')
 
 const tile1 = new Tile(1,1, '', 5, 'tile1');
 
