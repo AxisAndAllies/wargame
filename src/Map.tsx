@@ -37,6 +37,7 @@ export const Map = () => {
     const pos = [39, 90]
     const mapRef = useRef(null)
     const [focusedLayer, setFocusedLayer] = useState<Layer | null>(null)
+    const [units, setUnits] = useState(mockGame.units)
 
     // const curBounds: LatLngTuple = useMemo(() => {
     //     // console.log('ee', focusedLayer?.getBounds())
@@ -45,6 +46,10 @@ export const Map = () => {
     //         [51.51, -0.07],
     //     ]
     // }, [focusedLayer])
+
+    const centerComponent = useMemo(() => {
+        return focusedLayer ? <Center layer={focusedLayer} /> : null
+    }, [units.length, focusedLayer])
 
     const resetLayerStyle = (layer: Layer) => {
         layer?.setStyle({
@@ -103,7 +108,15 @@ export const Map = () => {
                     units={mockGame.queryUnits(
                         mockGame.getTile(focusedLayer.feature.properties.name)
                     )}
-                    buyUnit={mockGame.buyUnit.bind(mockGame)}
+                    buyUnit={(type: string, tileId: string) => {
+                        mockGame.buyUnit(type, tileId)
+                        // lol not reactive :/
+                        focusedLayer.setStyle({
+                            fillColor: getPlayerColor(focusedLayer),
+                        })
+                        setUnits([...mockGame.units])
+                    }}
+                    endTurn={mockGame.nextTurn.bind(mockGame)}
                 />
             )}
             <MapContainer
@@ -120,7 +133,7 @@ export const Map = () => {
                     ref={mapRef}
                 />
 
-                {focusedLayer && <Center layer={focusedLayer} />}
+                {centerComponent}
             </MapContainer>
         </>
     )
@@ -128,7 +141,7 @@ export const Map = () => {
 
 const Center = ({ layer }: { layer: Layer }) => {
     const { geometry, properties } = layer.feature
-    const getRadius = () => getScale(layer) * 20_000
+    const getRadius = () => getScale(layer) * 10_000
     return (
         <>
             <LayerGroup>
@@ -152,7 +165,9 @@ const Center = ({ layer }: { layer: Layer }) => {
                             center={getAvg(
                                 getLargestChunk(geometry.coordinates)
                             ).reverse()}
-                            pathOptions={{ color: '#c3284f' }}
+                            pathOptions={{
+                                color: getPlayerColor(layer) || 'black', //'#c3284f',
+                            }}
                             radius={getRadius()}
                         />
                         {/* {focusedLayer?.feature.geometry.coordinates.map(
@@ -185,7 +200,9 @@ const Center = ({ layer }: { layer: Layer }) => {
                 ) : (
                     <Circle
                         center={layer.getBounds().getCenter()}
-                        pathOptions={{ color: 'purple' }}
+                        pathOptions={{
+                            color: getPlayerColor(layer) || 'black', //'purple',
+                        }}
                         radius={getRadius()}
                     />
                 )}
@@ -216,7 +233,8 @@ const getScale = (layer: Layer) => {
     const units = mockGame.queryUnits(tile)
     const sumValue = units.reduce((acc, val) => acc + val.cost, 0)
     // let res = Math.sqrt(mockGame.queryUnits(tile).length) * 3 + 1
-    let res = sumValue + 2
+    // let res = Math.sqrt(sumValue) + 2
+    let res = Math.ceil(sumValue / 4) + 1
     return res
 }
 
@@ -225,7 +243,6 @@ const getPlayerColor = (layer: Layer) => {
     const tile = mockGame.getTile(properties.name)
     const units = mockGame.queryUnits(tile)
     if (!units.length) return null
-    console.log(units[0].owner.color)
     return units[0].owner.color
 }
 
@@ -286,17 +303,17 @@ function computedStyle(feature: Feature) {
     }
 }
 
-const getLargestChunk = (coords: [number][]) => {
+const getLargestChunk = (coords: [LatLngTuple[]][]) => {
     let maxCoords = coords.sort((a, b) => b[0].length - a[0].length)[0]
-    maxCoords = maxCoords[0]
+    let res = maxCoords[0]
     // coords.map((c) => {
     //     console.log(c.length, maxCoords.length)
     //     if (c.length > maxCoords.length) maxCoords = c
     // })
-    return maxCoords
+    return res
 }
 
-var getAvg = function (arr: [number, number][]): [number, number] {
+var getAvg = function (arr: LatLngTuple[]): LatLngTuple {
     let res = arr.reduce(
         function (x, y) {
             return [x[0] + y[0] / arr.length, x[1] + y[1] / arr.length]
@@ -306,7 +323,7 @@ var getAvg = function (arr: [number, number][]): [number, number] {
     return res
 }
 
-const getCentroid2 = (arr: [number, number][]): [number, number] => {
+const getCentroid2 = (arr: LatLngTuple[]): LatLngTuple => {
     // from https://stackoverflow.com/questions/22796520/finding-the-center-of-leaflet-polygon
     let twoTimesSignedArea = 0
     let cxTimes6SignedArea = 0
@@ -329,7 +346,7 @@ const getCentroid2 = (arr: [number, number][]): [number, number] => {
     }
 
     let sixSignedArea = 3 * twoTimesSignedArea
-    let res = [
+    let res: LatLngTuple = [
         cxTimes6SignedArea / sixSignedArea,
         cyTimes6SignedArea / sixSignedArea,
     ]

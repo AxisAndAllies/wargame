@@ -3,8 +3,8 @@ import { Box, Button, Flex, Badge, Text } from 'theme-ui'
 import { Combat, Game, sumDict, Unit } from './game/game'
 import { Attack, Defense, Descript, Hit, NumMap, UnitType } from './game/data'
 
-const UnitText = ({ type, count }: { type: string; count: number }) => (
-    <Text ml={4} sx={{ fontSize: '18px' }}>
+export const UnitText = ({ type, count }: { type: string; count: number }) => (
+    <Text sx={{ fontSize: '18px' }}>
         <strong>{count}</strong> {Descript[type]}: <br></br>
         <Badge mr={2} variant="outline">
             {Attack[type]} att ({Unit.getAccuracy(type) * 100}%)
@@ -67,6 +67,7 @@ const UnitStack = ({
                                         ? 'hidden'
                                         : 'visible',
                                 }}
+                                mr={4}
                             >
                                 <Button
                                     variant="secondary"

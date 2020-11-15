@@ -1,6 +1,7 @@
 import type { Layer } from 'leaflet'
 import React from 'react'
 import { Box, Button, Flex, Text } from 'theme-ui'
+import { UnitText } from './CombatModal'
 import { UnitType, Descript, Cost } from './game/data'
 import type { Tile, Unit } from './game/game'
 
@@ -8,8 +9,9 @@ const Menu: React.FC<{
     layer: Layer
     tile: Tile
     units: Unit[]
+    endTurn: () => void
     buyUnit: (type: string, tileId: string) => void
-}> = ({ layer, buyUnit, tile, units }) => {
+}> = ({ layer, buyUnit, tile, units, endTurn }) => {
     console.log(layer)
     const { properties, geometry } = layer.feature
     return (
@@ -36,10 +38,15 @@ const Menu: React.FC<{
             <Flex py={4} sx={{ flexDirection: 'column' }}>
                 <Text sx={{ fontSize: '28px' }}>{properties.name}</Text>
                 <Text sx={{ fontSize: '18px' }}>${tile.value}</Text>
-                <Box sx={{ wordWrap: 'break-word' }}>
-                    {units.map((u) => (
-                        <Box>{(u.owner, u.type)}</Box>
-                    ))}
+                <Box sx={{ minHeight: '140px' }} my={4}>
+                    {Object.keys(UnitType).map((type) => {
+                        const num = units.filter((u) => u.type == type).length
+                        return num > 0 ? (
+                            <Box py={2}>
+                                <UnitText type={type} count={num} />
+                            </Box>
+                        ) : null
+                    })}
                 </Box>
                 {Object.keys(UnitType).map((type) => (
                     <Box>
@@ -52,6 +59,9 @@ const Menu: React.FC<{
                         </Button>
                     </Box>
                 ))}
+                <Button onClick={(e) => endTurn()} my={2} variant="secondary">
+                    End Turn
+                </Button>
             </Flex>
         </Box>
     )
