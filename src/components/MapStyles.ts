@@ -14,6 +14,13 @@ export const getScale = (layer: Layer) => {
     return res
 }
 
+export const getValue = (geometry) => {
+    let res= geometry.type == 'MultiPolygon'
+            ? Math.min(16, geometry.coordinates.length)
+            : 1
+    return res
+}
+
 export const getPlayerColor = (layer: Layer) => {
     const { geometry, properties } = layer.feature
     const tile = mockGame.getTile(properties.name)

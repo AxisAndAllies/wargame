@@ -14,18 +14,16 @@ import { Text } from 'theme-ui'
 import Menu from './Menu'
 import mockExports from '../game/driver'
 import { Tile } from '../game/game'
-import Center from './TileCenter'
-import { getPlayerColor, mapColors, style } from './MapStyles'
+import Center, { getCenter } from './TileCenter'
+import { getPlayerColor, getValue, mapColors, style } from './MapStyles'
 // import * as turf from '@turf/turf'
 const { mockGame } = mockExports
 
 // process data
 data.features.forEach(({ properties, geometry }) => {
     // add tiles
-    const value =
-        geometry.type == 'MultiPolygon'
-            ? Math.min(16, geometry.coordinates.length)
-            : 1
+    const value = getValue(geometry)
+
     const newTile = new Tile(0, 0, '', value, properties.name)
     mockGame.addTile(newTile)
 })
@@ -51,10 +49,32 @@ export const Map = () => {
     const centers = useMemo(() => {
         let res: JSX.Element[] = []
         mapRef.current?.eachLayer((e) => {
+            // console.log(getValue(e.feature.geometry))
             res.push(<Center layer={e} />)
         })
         return res.length ? <>{...res}</> : null
     }, [units.length, focusedLayer])
+
+    // const costs = useMemo(() => {
+    //     let res: JSX.Element[] = []
+    //     mapRef.current?.eachLayer((e) => {
+    //         // console.log(getValue(e.feature.geometry))
+    //         const value = getValue(e.feature.geometry)
+    //         const center = getCenter(e)
+    //         console.log(center)
+    //         res.push(
+    //             <text
+    //                 x={center[0] * 4 + 300}
+    //                 y={center[1] * 4 + 200}
+    //                 stroke="black"
+    //                 fontSize="1.5em"
+    //             >
+    //                 {value}
+    //             </text>
+    //         )
+    //     })
+    //     return res.length ? <>{...res}</> : null
+    // }, [mapRef.current])
 
     const resetLayerStyle = (layer: Layer) => {
         layer?.setStyle({

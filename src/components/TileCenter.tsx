@@ -1,17 +1,31 @@
 import { Circle, LayerGroup, SVGOverlay } from 'react-leaflet'
 import React, { useMemo } from 'react'
 import type { LatLngTuple, Layer } from 'leaflet'
-import { getScale, getPlayerColor } from './MapStyles'
+import { getScale, getPlayerColor, getValue } from './MapStyles'
+
+export const getCenter = (layer: Layer) => {
+    const { geometry } = layer.feature
+    let center =
+        geometry.type == 'MultiPolygon'
+            ? getAvg(getLargestChunk(geometry.coordinates)).reverse()
+            : layer.getBounds().getCenter()
+    // console.log(center)
+    return center
+}
+
+const convertBounds = (center: LatLngTuple) => {
+    let a = [center[0] - 2, center[1] - 2]
+    let b = [center[0] + 2, center[1] + 2]
+    return [a, b]
+}
 
 const Center = ({ layer }: { layer: Layer }) => {
     const { geometry, properties } = layer.feature
-    if (getScale(layer) <= 1) return null
     const getRadius = () => getScale(layer) * 10_000
     const center = useMemo(() => {
-        return geometry.type == 'MultiPolygon'
-            ? getAvg(getLargestChunk(geometry.coordinates)).reverse()
-            : layer.getBounds().getCenter()
-    }, [layer])
+        return getCenter(layer)
+    }, [properties.name])
+    const value = getValue(geometry)
 
     return (
         <>
@@ -29,13 +43,29 @@ const Center = ({ layer }: { layer: Layer }) => {
                                 radius={100_000}
                             /> */}
                 {/* <Rectangle bounds={layer?.getBounds()} /> */}
-                <Circle
-                    center={center}
-                    pathOptions={{
-                        color: getPlayerColor(layer) || 'black', //'#c3284f',
-                    }}
-                    radius={getRadius()}
-                />
+                {getScale(layer) > 1 && (
+                    <Circle
+                        center={center}
+                        pathOptions={{
+                            color: getPlayerColor(layer) || 'black', //'#c3284f',
+                        }}
+                        radius={getRadius()}
+                    />
+                )}
+                <SVGOverlay
+                    attributes={{ stroke: 'red' }}
+                    bounds={
+                        geometry.type == 'MultiPolygon'
+                            ? convertBounds(getCenter(layer))
+                            : layer.getBounds()
+                    }
+                >
+                    {/* <rect x="0" y="0" width="100%" height="100%" fill="blue" /> */}
+                    {/* <circle r="5" cx="10" cy="10" fill="red" /> */}
+                    <text x="50%" y="50%" stroke="black">
+                        {value}
+                    </text>
+                </SVGOverlay>
             </LayerGroup>
             {/* <SVGOverlay attributes={{ stroke: 'red' }} bounds={curBounds}>
                 <rect x="0" y="0" width="100%" height="100%" fill="blue" />
@@ -92,34 +122,34 @@ var getAvg = function (arr: LatLngTuple[]): LatLngTuple {
     return res
 }
 
-const getCentroid2 = (arr: LatLngTuple[]): LatLngTuple => {
-    // from https://stackoverflow.com/questions/22796520/finding-the-center-of-leaflet-polygon
-    let twoTimesSignedArea = 0
-    let cxTimes6SignedArea = 0
-    let cyTimes6SignedArea = 0
+// const getCentroid2 = (arr: LatLngTuple[]): LatLngTuple => {
+//     // from https://stackoverflow.com/questions/22796520/finding-the-center-of-leaflet-polygon
+//     let twoTimesSignedArea = 0
+//     let cxTimes6SignedArea = 0
+//     let cyTimes6SignedArea = 0
 
-    let length = arr.length
+//     let length = arr.length
 
-    let x = function (i: number) {
-        return arr[i % length][0]
-    }
-    let y = function (i: number) {
-        return arr[i % length][1]
-    }
+//     let x = function (i: number) {
+//         return arr[i % length][0]
+//     }
+//     let y = function (i: number) {
+//         return arr[i % length][1]
+//     }
 
-    for (let i = 0; i < arr.length; i++) {
-        let twoSA = x(i) * y(i + 1) - x(i + 1) * y(i)
-        twoTimesSignedArea += twoSA
-        cxTimes6SignedArea += (x(i) + x(i + 1)) * twoSA
-        cyTimes6SignedArea += (y(i) + y(i + 1)) * twoSA
-    }
+//     for (let i = 0; i < arr.length; i++) {
+//         let twoSA = x(i) * y(i + 1) - x(i + 1) * y(i)
+//         twoTimesSignedArea += twoSA
+//         cxTimes6SignedArea += (x(i) + x(i + 1)) * twoSA
+//         cyTimes6SignedArea += (y(i) + y(i + 1)) * twoSA
+//     }
 
-    let sixSignedArea = 3 * twoTimesSignedArea
-    let res: LatLngTuple = [
-        cxTimes6SignedArea / sixSignedArea,
-        cyTimes6SignedArea / sixSignedArea,
-    ]
-    return res
-}
+//     let sixSignedArea = 3 * twoTimesSignedArea
+//     let res: LatLngTuple = [
+//         cxTimes6SignedArea / sixSignedArea,
+//         cyTimes6SignedArea / sixSignedArea,
+//     ]
+//     return res
+// }
 
 export default Center
