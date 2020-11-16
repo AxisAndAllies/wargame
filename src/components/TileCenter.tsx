@@ -1,7 +1,7 @@
 import { Circle, LayerGroup, SVGOverlay } from 'react-leaflet'
 import React, { useMemo } from 'react'
 import type { LatLngTuple, Layer } from 'leaflet'
-import { getScale, getPlayerColor, getValue } from './MapStyles'
+import { getScale, getPlayerColor, getValue } from './utils'
 
 export const getCenter = (layer: Layer) => {
     const { geometry } = layer.feature
@@ -14,8 +14,8 @@ export const getCenter = (layer: Layer) => {
 }
 
 const convertBounds = (center: LatLngTuple) => {
-    let a = [center[0] - 2, center[1] - 2]
-    let b = [center[0] + 2, center[1] + 2]
+    let a = [center[0] - 3, center[1] - 3]
+    let b = [center[0] + 3, center[1] + 3]
     return [a, b]
 }
 

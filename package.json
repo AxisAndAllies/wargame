@@ -12,6 +12,7 @@
     "leaflet": "^1.7.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-hotkeys-hook": "^2.4.0",
     "react-leaflet": "^3.0.2",
     "short-animal-id": "^3.0.1",
     "theme-ui": "^0.3.1"

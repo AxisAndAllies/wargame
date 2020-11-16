@@ -7,6 +7,7 @@ import {
     Circle,
     LayerGroup,
     Rectangle,
+    Polyline,
 } from 'react-leaflet'
 import data from '../game/50m-map.json'
 import type { Feature } from 'geojson'
@@ -15,9 +16,10 @@ import Menu from './Menu'
 import mockExports from '../game/driver'
 import { Tile } from '../game/game'
 import Center, { getCenter } from './TileCenter'
-import { getPlayerColor, getValue, mapColors, style } from './MapStyles'
+import { getPlayerColor, getValue, mapColors, style } from './utils'
 // import * as turf from '@turf/turf'
 const { mockGame } = mockExports
+import { useHotkeys, useIsHotkeyPressed } from 'react-hotkeys-hook'
 
 // process data
 data.features.forEach(({ properties, geometry }) => {
@@ -29,11 +31,11 @@ data.features.forEach(({ properties, geometry }) => {
 })
 
 export const Map = () => {
-    const pos = [39, 90]
     const mapRef = useRef(null)
     const [focusedLayer, setFocusedLayer] = useState<Layer | null>(null)
+    const [pathPoints, setPathPoints] = useState([])
     const [units, setUnits] = useState(mockGame.units)
-
+    const isPressed = useIsHotkeyPressed()
     // const curBounds: LatLngTuple = useMemo(() => {
     //     // console.log('ee', focusedLayer?.getBounds())
     //     return [
@@ -54,6 +56,11 @@ export const Map = () => {
         })
         return res.length ? <>{...res}</> : null
     }, [units.length, focusedLayer])
+
+    const path = useMemo(() => {
+        console.log(pathPoints)
+        return <Polyline positions={pathPoints.map((p) => getCenter(p))} />
+    }, [pathPoints.length, focusedLayer])
 
     // const costs = useMemo(() => {
     //     let res: JSX.Element[] = []
@@ -86,19 +93,31 @@ export const Map = () => {
             weight: 1,
         })
     }
+    useHotkeys('s', () => {
+        // console.log('s')
+    })
 
     const eventHandlers: LeafletEventHandlerFnMap = {
         click: (e) => {
-            resetLayerStyle(focusedLayer!)
-            e.propagatedFrom.setStyle({
-                fillColor:
-                    getPlayerColor(e.propagatedFrom) || mapColors.highlight,
-                fillOpacity: 0.3,
-                color: 'white',
-                weight: 2,
-            })
-            e.propagatedFrom.bringToFront()
-            setFocusedLayer(e.propagatedFrom)
+            // console.log(isPressed('s'))
+            if (isPressed('s')) {
+                setPathPoints([...pathPoints, e.propagatedFrom])
+                console.log('pushed', pathPoints)
+            } else {
+                // reset style
+                resetLayerStyle(focusedLayer!)
+                e.propagatedFrom.setStyle({
+                    fillColor:
+                        getPlayerColor(e.propagatedFrom) || mapColors.highlight,
+                    fillOpacity: 0.3,
+                    color: 'white',
+                    weight: 2,
+                })
+                e.propagatedFrom.bringToFront()
+                setFocusedLayer(e.propagatedFrom)
+                // clear path points
+                setPathPoints([e.propagatedFrom])
+            }
         },
         mouseover: (e) => {
             if (focusedLayer == e.layer) {
@@ -145,7 +164,7 @@ export const Map = () => {
                 />
             )}
             <MapContainer
-                center={{ lat: pos[0], lng: pos[1] }}
+                center={{ lat: 40, lng: 60 }}
                 zoom={4}
                 scrollWheelZoom={true}
                 style={{ height: '90%', zIndex: 1 }}
@@ -160,6 +179,15 @@ export const Map = () => {
 
                 {centerComponent}
                 {centers}
+                <SVGOverlay
+                    attributes={{ stroke: 'red' }}
+                    bounds={[
+                        [0, 0],
+                        [1000, 1000],
+                    ]}
+                >
+                    {path}
+                </SVGOverlay>
             </MapContainer>
         </>
     )
