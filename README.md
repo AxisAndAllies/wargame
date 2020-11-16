@@ -1,5 +1,7 @@
 # wargame
 
+[Axis & Allies](https://en.wikipedia.org/wiki/Axis_%26_Allies) clone.
+
 > ✨ Bootstrapped with Create Snowpack App (CSA).
 
 ```
@@ -8,6 +10,15 @@ npx create-snowpack-app new-dir --template @snowpack/app-template-react-typescri
 
 ### Graphics
 
--   interactive hexgrid
--   voronoi diagram of graph nodes
 -   leafletjs
+-   React + ThemeUI
+
+## Screenshots
+
+## Map
+
+<img src="./screenshot.png" height="400"/>
+
+## Combat
+
+<img src="./screenshot2.png" height="400"/>
