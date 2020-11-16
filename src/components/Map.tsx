@@ -16,7 +16,7 @@ import Menu from './Menu'
 import mockExports from '../game/driver'
 import { Tile } from '../game/game'
 import Center, { getCenter } from './TileCenter'
-import { getPlayerColor, getValue, mapColors, style } from './utils'
+import { getPlayerColor, getValue, isAdjacent, mapColors, style } from './utils'
 // import * as turf from '@turf/turf'
 const { mockGame } = mockExports
 import { useHotkeys, useIsHotkeyPressed } from 'react-hotkeys-hook'
@@ -58,7 +58,6 @@ export const Map = () => {
     }, [units.length, focusedLayer])
 
     const path = useMemo(() => {
-        console.log(pathPoints)
         return <Polyline positions={pathPoints.map((p) => getCenter(p))} />
     }, [pathPoints.length, focusedLayer])
 
@@ -101,8 +100,16 @@ export const Map = () => {
         click: (e) => {
             // console.log(isPressed('s'))
             if (isPressed('s')) {
-                setPathPoints([...pathPoints, e.propagatedFrom])
-                console.log('pushed', pathPoints)
+                if (e.propagatedFrom == pathPoints[pathPoints.length - 1])
+                    return
+                if (
+                    isAdjacent(
+                        e.propagatedFrom,
+                        pathPoints[pathPoints.length - 1]
+                    )
+                )
+                    setPathPoints([...pathPoints, e.propagatedFrom])
+                // console.log(pathPoints)
             } else {
                 // reset style
                 resetLayerStyle(focusedLayer!)

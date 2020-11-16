@@ -1,7 +1,13 @@
 import { Circle, LayerGroup, SVGOverlay } from 'react-leaflet'
 import React, { useMemo } from 'react'
 import type { LatLngTuple, Layer } from 'leaflet'
-import { getScale, getPlayerColor, getValue } from './utils'
+import {
+    getScale,
+    getPlayerColor,
+    getValue,
+    getAvg,
+    getLargestChunk,
+} from './utils'
 
 export const getCenter = (layer: Layer) => {
     const { geometry } = layer.feature
@@ -101,55 +107,5 @@ const Center = ({ layer }: { layer: Layer }) => {
 //         ))}
 //     </>
 // )
-
-const getLargestChunk = (coords: [LatLngTuple[]][]) => {
-    let maxCoords = coords.sort((a, b) => b[0].length - a[0].length)[0]
-    let res = maxCoords[0]
-    // coords.map((c) => {
-    //     console.log(c.length, maxCoords.length)
-    //     if (c.length > maxCoords.length) maxCoords = c
-    // })
-    return res
-}
-
-var getAvg = function (arr: LatLngTuple[]): LatLngTuple {
-    let res = arr.reduce(
-        function (x, y) {
-            return [x[0] + y[0] / arr.length, x[1] + y[1] / arr.length]
-        },
-        [0, 0]
-    )
-    return res
-}
-
-// const getCentroid2 = (arr: LatLngTuple[]): LatLngTuple => {
-//     // from https://stackoverflow.com/questions/22796520/finding-the-center-of-leaflet-polygon
-//     let twoTimesSignedArea = 0
-//     let cxTimes6SignedArea = 0
-//     let cyTimes6SignedArea = 0
-
-//     let length = arr.length
-
-//     let x = function (i: number) {
-//         return arr[i % length][0]
-//     }
-//     let y = function (i: number) {
-//         return arr[i % length][1]
-//     }
-
-//     for (let i = 0; i < arr.length; i++) {
-//         let twoSA = x(i) * y(i + 1) - x(i + 1) * y(i)
-//         twoTimesSignedArea += twoSA
-//         cxTimes6SignedArea += (x(i) + x(i + 1)) * twoSA
-//         cyTimes6SignedArea += (y(i) + y(i + 1)) * twoSA
-//     }
-
-//     let sixSignedArea = 3 * twoTimesSignedArea
-//     let res: LatLngTuple = [
-//         cxTimes6SignedArea / sixSignedArea,
-//         cyTimes6SignedArea / sixSignedArea,
-//     ]
-//     return res
-// }
 
 export default Center

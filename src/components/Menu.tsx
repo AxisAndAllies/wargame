@@ -12,7 +12,7 @@ const Menu: React.FC<{
     endTurn: () => void
     buyUnit: (type: string, tileId: string) => void
 }> = ({ layer, buyUnit, tile, units, endTurn }) => {
-    console.log(layer)
+    // console.log(layer)
     const { properties, geometry } = layer.feature
     return (
         <Box
