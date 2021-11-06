@@ -9,7 +9,7 @@ you can choose to "fortify" an area, which takes 3 turns + costs $$$, but on com
 cities gives -25% accuracy penalty to attackers to all attackers
 IN combat:
     - each "round" consists of attacker fire, followed by defender fire
-    - defender can retreat anytime, but can't fire for that round
+    - attacker can retreat anytime, but can't fire for that round
 TODO:
 factories?? (or can just produce in cities?)
 APC can carry 2 INF or INFH
