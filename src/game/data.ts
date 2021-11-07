@@ -70,10 +70,10 @@ export const Move: NumMap = {
 }
 
 // export const Accuracy: Record<string, NumMap> = {
-//     INF: {default: .6},
+//     INF: {default: .4},
 //     INFH: {default: .6},
 //     APC: {default: .6},
-//     ARTI: {default: .25},
+//     ARTI: {default: .5},
 //     AA: {default: .6, BOM: .3, FIG: .3, HELI: .3},
 //     TANKL: {default: .6},
 //     TANKH: {default: .6},
